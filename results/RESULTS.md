@@ -52,7 +52,20 @@ Raw numbers for every training run are in `runs.csv`. This file records findings
   - Mirror augmentation applies to train only (44,989 → 89,978). Crops use the same split and are flipped horizontally.
   - `include_enhanced=False` removes brightened samples from **train only**; val/test stay identical so the with/without comparison is fair.
 
-## 3. Tuning (MLP)
+## 3. First MLP (Phase 1)
+
+- Model (`src/models.py`): 63 → 256 → 128 → 24, ReLU, dropout 0.3 after each hidden layer. **52,376 parameters.**
+  - ReLU: standard default, no vanishing gradients at this depth. Dropout: 60k samples of one signer overfit easily.
+  - Outputs raw scores (logits); `CrossEntropyLoss` applies softmax itself.
+- Training (`src/train.py`): Adam lr 1e-3, batch 32, max 50 epochs, early stopping when val loss doesn't improve for 5 epochs, best-val-loss checkpoint kept.
+  - Every run appends a row to `runs.csv` and writes per-epoch curves to `history/<run_id>.csv`.
+  - `train.py` only reports **validation** scores. The test set is touched once, for final models, so tuning can't overfit it.
+- **Result (run `20261018-203217_mlp_adam_bs32`): val macro F1 96.5%, val accuracy 96.8%** at epoch 9 (stopped at 14), 108 s on CPU.
+  - Already above the 90% dataset target. Expected: this split is optimistic (one signer, see the 1-NN leakage check).
+  - Train accuracy 97.1% vs val 96.8% at the best epoch: no real overfitting.
+  - Val loss jumps between epochs (0.12 → 0.18 → 0.12): batch 32 gives noisy updates. Worth comparing with batch 64 in Phase 2.
+
+## 4. Tuning (MLP)
 
 | Optimizer | Batch size | Val F1 | Epochs | Notes |
 |---|---|---|---|---|
@@ -65,21 +78,21 @@ Winner:
 
 Follow-ups on the winner (LR schedule, dropout 0.3 vs 0.5):
 
-## 4. MLP vs CNN
+## 5. MLP vs CNN
 
 | Model | Dataset test F1 | Webcam test F1 | Size | ms / frame |
 |---|---|---|---|---|
 | A: CNN (hand crops) | | | | |
 | B: MLP (landmarks) | | | | |
 
-## 5. Live app
+## 6. Live app
 
 - Gate settings:
 - Double-letter rule:
 - End-to-end ms per frame:
 
-## 6. Problems and fixes
+## 7. Problems and fixes
 
 - **Webcam stopped sending frames on Windows.** OpenCV's default backend (MSMF) dropped the stream after a few seconds. Fixed by opening the camera with DirectShow (`cv2.CAP_DSHOW`).
 
-## 7. Report lines
+## 8. Report lines
