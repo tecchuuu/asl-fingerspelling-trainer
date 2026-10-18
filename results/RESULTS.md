@@ -44,7 +44,13 @@ Raw numbers for every training run are in `runs.csv`. This file records findings
   - The 3 wrist features are always 0 (63 inputs, 60 informative). Kept for simplicity.
   - **Effect:** nearest-centroid classifier (one average per letter, no training) goes from **50.4% on raw landmarks to 85.4% on normalized**. Figure: `figures/normalize_before_after.png` (40 'A' hands before/after).
 - Handedness: **mirror augmentation, not label-based flipping.** The dataset is one signer, yet MediaPipe labels ~5% of hands "Left" (e.g. Y: 2,560 Right / 20 Left), so the label is too unreliable to decide which hands to flip. Instead, training adds a mirrored copy (`mirror()`: x → −x) so the model learns both hands.
-- Train / val / test split:
+- Train / val / test split (`src/dataset.py`, checks in `scripts/check_split.py`): **block split, ~70 / 15 / 15 per letter.**
+  - Frame numbers follow recording order: consecutive frames are ~4× closer in landmark space than random pairs (A: 0.24 vs 1.01), and frames ≤100 apart are closer than frames >1000 apart (0.71 vs 1.13).
+  - So frames are grouped in blocks of 100 (≈30 blocks per letter) and whole blocks go to one split. Blocks are assigned until each split reaches its share of the letter's **samples** (not blocks), because failed detections cluster in certain blocks. First version split by block count and one letter got only a quarter of its fair test share.
+  - Result: train 44,989 (71.7%), val 9,132 (14.6%), test 8,583 (13.7%). Each letter has 11.3–15.0% of its samples in test. 12.7% of test samples are brightening-recovered.
+  - **Leakage evidence:** 1-nearest-neighbour (copies the label of the most similar training sample) scores 98.8% on a random split vs 96.4% on the block split. Blocks reduce leakage but don't remove it: it's one signer in a few sessions, so any split of this dataset stays optimistic. That's why the webcam test exists.
+  - Mirror augmentation applies to train only (44,989 → 89,978). Crops use the same split and are flipped horizontally.
+  - `include_enhanced=False` removes brightened samples from **train only**; val/test stay identical so the with/without comparison is fair.
 
 ## 3. Tuning (MLP)
 
