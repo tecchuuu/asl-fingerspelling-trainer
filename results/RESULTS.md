@@ -67,14 +67,21 @@ Raw numbers for every training run are in `runs.csv`. This file records findings
 
 ## 4. Tuning (MLP)
 
-| Optimizer | Batch size | Val F1 | Epochs | Notes |
-|---|---|---|---|---|
-| Adam (1e-3) | 32 | | | |
-| Adam (1e-3) | 64 | | | |
-| SGD + momentum (1e-2, 0.9) | 32 | | | |
-| SGD + momentum (1e-2, 0.9) | 64 | | | |
+Same model (dropout 0.3), same split, seed 42, early stopping patience 5. Figure: `figures/optimizer_comparison.png` (made by `scripts/plot_curves.py`).
 
-Winner:
+| Optimizer | Batch size | Val F1 | Val loss | Best epoch / run | Time |
+|---|---|---|---|---|---|
+| Adam (1e-3) | 32 | 96.45% | 0.1175 | 9 / 14 | 108 s |
+| **Adam (1e-3)** | **64** | **96.60%** | **0.1133** | 20 / 25 | 87 s |
+| SGD + momentum (1e-2, 0.9) | 32 | 96.37% | 0.1204 | 15 / 20 | 88 s |
+| SGD + momentum (1e-2, 0.9) | 64 | 96.44% | 0.1161 | 30 / 35 | 101 s |
+
+- **All four end within 0.25 points of F1.** With one seed each, that gap is about the size of run-to-run noise, so the optimizers reach the same quality on this problem.
+- **The real difference is how fast they get there.** Adam is at ~94% F1 by epoch 2–3; SGD bs64 needs ~8 epochs for the same and ~30 to reach its best. Adam adapts the step size per weight; plain SGD with one global lr has to crawl.
+- **Batch 64 is smoother than 32** for both optimizers (fewer val-loss spikes, e.g. Adam bs32's jump at epoch 8). Larger batches average out more noise per step. It also trains faster per epoch on CPU (fewer, bigger steps).
+- No overfitting in any run: best-epoch train loss (0.07–0.10) stays close to val loss (0.11–0.12).
+
+Winner: **Adam, lr 1e-3, batch 64**: best val F1 and val loss, smooth curve, fastest wall-clock. Margin is small, so the honest claim is "Adam converges much faster for the same final quality", not "Adam is more accurate".
 
 Follow-ups on the winner (LR schedule, dropout 0.3 vs 0.5):
 

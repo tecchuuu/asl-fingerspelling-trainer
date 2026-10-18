@@ -1,2 +1,5 @@
 run_id,model,optimizer,lr,momentum,batch_size,dropout,scheduler,max_epochs,patience,epochs_run,best_epoch,train_loss,val_loss,val_acc,val_f1,params,train_seconds,split,include_enhanced,mirror_train,seed,notes
 20261018-203217_mlp_adam_bs32,mlp,adam,0.001,,32,0.3,none,50,5,14,9,0.0953,0.1175,0.9681,0.9645,52376,108,block,True,True,42,"first MLP, Phase 1 baseline"
+20261018-215344_mlp_adam_bs64,mlp,adam,0.001,,64,0.3,none,50,5,25,20,0.0729,0.1133,0.9691,0.9660,52376,87,block,True,True,42,optimizer comparison
+20261018-215519_mlp_sgd_bs32,mlp,sgd,0.01,0.9,32,0.3,none,50,5,20,15,0.0878,0.1204,0.9670,0.9637,52376,88,block,True,True,42,optimizer comparison
+20261018-215654_mlp_sgd_bs64,mlp,sgd,0.01,0.9,64,0.3,none,50,5,35,30,0.0726,0.1161,0.9676,0.9644,52376,101,block,True,True,42,optimizer comparison
