@@ -1,0 +1,14 @@
+# Python 3.12
+# On Windows, install the CPU build of torch first:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+torch>=2.14
+torchvision>=0.29
+
+# Pinned exactly: the hand-tracking API changes between versions
+mediapipe==1.1.1
+
+opencv-python>=5.0
+numpy>=2.5
+scikit-learn>=1.9
+matplotlib>=3.11
+jupyter
