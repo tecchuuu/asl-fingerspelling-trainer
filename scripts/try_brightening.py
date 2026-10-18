@@ -1,6 +1,6 @@
 """Retry the images MediaPipe failed on, after brightening, and count how many are recovered.
 
-Run from the project root:  python -m scripts.try_clahe
+Run from the project root:  python -m scripts.try_brightening
 """
 
 import csv
@@ -17,7 +17,7 @@ from mediapipe.tasks.python.vision import HandLandmarksConnections
 
 from src import config, extract
 
-OUT_CSV = config.RESULTS_DIR / "clahe_experiment.csv"
+OUT_CSV = config.RESULTS_DIR / "brightening_experiment.csv"
 GRID_PATH = config.FIGURES_DIR / "gamma_recovered.png"
 
 
