@@ -33,8 +33,17 @@ Raw numbers for every training run are in `runs.csv`. This file records findings
 
 ## 2. Setup decisions
 
-- Mirroring: <!-- result of the webcam test: mirror ON/OFF, does Left/Right match the real hand? -->
-- Normalization:
+- Mirroring (webcam): <!-- result of the webcam test: mirror ON/OFF, does Left/Right match the real hand? -->
+- Normalization (`src/normalize.py`, used by training and the app): 21×3 raw landmarks → 63 features.
+  1. **Aspect fix:** x and z × (width / height). MediaPipe divides x by width and y by height, so a 640×480 webcam frame would stretch the hand horizontally vs the square dataset photos.
+  2. **Translation:** subtract the wrist → wrist at (0, 0, 0), position in the frame no longer matters.
+  3. **Scale:** divide by palm length (wrist → middle-finger knuckle). Chosen over the bounding box because palm length doesn't change with finger pose (a fist and an open hand have the same palm, different boxes).
+  4. **Rotation is NOT normalized on purpose:** orientation is part of some letters (P/Q point down, G/H point sideways, vs K/U pointing up).
+  - Checks (`scripts/check_normalize.py`): moving, resizing or aspect-squashing a hand gives identical features; mirroring twice is a no-op. All 62,704 samples: wrist = 0, palm length = 1.
+  - Outliers: only 35 samples (0.06%) have a point more than 3 palm lengths from the wrist (mostly C), so no filtering.
+  - The 3 wrist features are always 0 (63 inputs, 60 informative). Kept for simplicity.
+  - **Effect:** nearest-centroid classifier (one average per letter, no training) goes from **50.4% on raw landmarks to 85.4% on normalized**. Figure: `figures/normalize_before_after.png` (40 'A' hands before/after).
+- Handedness: **mirror augmentation, not label-based flipping.** The dataset is one signer, yet MediaPipe labels ~5% of hands "Left" (e.g. Y: 2,560 Right / 20 Left), so the label is too unreliable to decide which hands to flip. Instead, training adds a mirrored copy (`mirror()`: x → −x) so the model learns both hands.
 - Train / val / test split:
 
 ## 3. Tuning (MLP)
