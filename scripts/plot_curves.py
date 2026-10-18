@@ -25,7 +25,12 @@ def load_history(run_id):
 
 def label(run):
     name = "Adam" if run["optimizer"] == "adam" else "SGD+momentum"
-    return f"{name} lr={run['lr']} bs={run['batch_size']}"
+    text = f"{name} lr={run['lr']} bs={run['batch_size']}"
+    if run["scheduler"] != "none":
+        text += f" +{run['scheduler']}"
+    if run["dropout"] != "0.3":
+        text += f" drop={run['dropout']}"
+    return text
 
 
 def main():

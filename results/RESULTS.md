@@ -83,7 +83,27 @@ Same model (dropout 0.3), same split, seed 42, early stopping patience 5. Figure
 
 Winner: **Adam, lr 1e-3, batch 64**: best val F1 and val loss, smooth curve, fastest wall-clock. Margin is small, so the honest claim is "Adam converges much faster for the same final quality", not "Adam is more accurate".
 
-Follow-ups on the winner (LR schedule, dropout 0.3 vs 0.5):
+### Follow-ups on the winner (Adam, lr 1e-3, batch 64)
+
+Figure: `figures/schedule_dropout.png`.
+
+| Run | Val F1 | Val loss | Train loss | Best epoch / run | Time |
+|---|---|---|---|---|---|
+| Fixed lr, dropout 0.3 | 96.60% | 0.1133 | 0.073 | 20 / 28 | 87 s |
+| **ReduceLROnPlateau, dropout 0.3** | **96.81%** | **0.1013** | 0.034 | 44 / 50 | 157 s |
+| ReduceLROnPlateau, dropout 0.5 | 96.51% | 0.1165 | 0.078 | 45 / 50 | 158 s |
+
+All three use early-stopping patience 8 (see below).
+
+- **LR schedule** (ReduceLROnPlateau: halve the lr when val loss hasn't improved for 2 epochs). Why try it: the fixed-lr curves keep bouncing after epoch ~10 (val loss 0.11–0.16), the sign of steps too large to settle.
+  - LR halved at epochs 19, 26, 30, 40, 43, 48 (1e-3 → 1.6e-5).
+  - **Val loss −11% (0.1133 → 0.1013)** and the late spikes disappear. F1 +0.2 points: small, the model was already near its ceiling.
+  - Runs are deterministic: with the same seed, both runs are identical up to epoch 18, so the difference comes only from the schedule.
+- **Scheduler vs early stopping interaction.** First attempt used patience 5: the lr dropped at epoch 19 and early stopping ended the run at epoch 20, before the smaller lr could help (best val loss missed by 0.0001). Lesson: early-stopping patience must be longer than the scheduler's patience. Reran fixed and schedule with patience 8 for a fair comparison.
+- **Dropout 0.5 vs 0.3** (on top of the schedule). Why try it: with the schedule, train loss falls to 0.034 vs val 0.101, a widening gap, so more regularization might help.
+  - Result: **worse** (F1 96.51%, val loss 0.1165) and train loss back up to 0.078. 0.5 drops half the neurons in a small 256/128 network: it underfits instead of generalizing better. Keep 0.3.
+
+**Final MLP settings: Adam, lr 1e-3, batch 64, ReduceLROnPlateau (factor 0.5, patience 2), dropout 0.3, early-stopping patience 8, max 50 epochs.** Best run: `20261018-222208_mlp_adam_bs64`. These are the settings the CNN will use.
 
 ## 5. MLP vs CNN
 
