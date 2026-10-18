@@ -1,0 +1,37 @@
+# Personal planning notes (not part of the submission)
+CS461_Roadmap.md
+
+# Data: dataset is too big, webcam_test has my own face/hands
+data/
+
+# Model weights (large, regenerate with train.py)
+results/checkpoints/
+*.pt
+*.pth
+*.ckpt
+
+# SQLite attempt log from the app
+*.db
+*.sqlite
+*.sqlite3
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Secrets (e.g. Kaggle API key)
+.env
+kaggle.json
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
