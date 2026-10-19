@@ -284,6 +284,32 @@ The MLP predicts every frame (~30/s). While the hand moves between letters it fl
 - Settings are first guesses; to tune on the live demo (too slow → fewer frames / lower threshold; flickery → more frames).
 - Known limitation: fast signing can skip letters (each needs ~⅓ s stable); a sequence model (CTC) would handle continuous spelling properly.
 
+### "Other" class: hands that aren't signing
+
+**Problem (found in the live demo):** a resting open hand was typed as F. The MLP is a closed-set classifier: it must pick one of the 24 letters for any hand. An open hand has 3–4 spread fingers, closest to F. A confidence threshold can't fix it (the wrong guesses are confident), and a distance-to-letter check doesn't work either: letters vary more within themselves (95% of training hands within 2.7 of their own letter's centroid) than letter centroids differ from each other (~1.7).
+
+**Fix:** a 25th class, "other".
+- Data: my own recordings of non-letter poses (`scripts/record_other.py`): open/relaxed/half-closed hands, waving, turning, claw, reaching, hand partly out of frame; both hands; captured automatically ~5×/s. `other-1` = 601 samples (train/val, split in blocks of 50 consecutive captures), `other-test` = 201 samples recorded separately (held-out test). Training data only; never mixed into the letter test sets.
+- Retrained the MLP once with the final settings (`--model mlp_other`); everything else unchanged. 52,505 parameters (+129 for the extra output). Saved as `models/mlp_other_final.pt`; the 24-class `mlp_final.pt` stays as the "before".
+- The gate treats "other" like an unsure frame: never typed, no streak.
+
+**First result: F swallowed.** The new model called **all 9 of my webcam F's "other"**. Cause: every "other" sample comes from my webcam (camera mounted high, looking down), while every letter sample comes from the dataset (camera level). From above, my F (three spread fingers) looks more like my open hands than like the dataset's F. Same angle confound as Q → P.
+- Tried: removing F-like "other" samples (thumb tip within 0.4 palm lengths of the index tip, ~5% of other-1) and retraining. Barely helped (8 of 9 F's still "other"), so bad samples weren't the cause.
+- **Pinch guard** (`src/predict.py`): if the thumb tip touches the index tip (< 0.35 palm lengths; 95% of dataset F's are < 0.31, non-letter hands are mostly > 0.4), "other" is ruled out. A thumb–index circle (F, O, D, ...) is a deliberate shape, not a resting hand. Kept the cleaned retrain as well.
+
+**Before / after** (`scripts/compare_other.py`, `other_class_comparison.csv`). "Would type" = a letter predicted with confidence ≥ 0.8, enough for the gate.
+
+| Model | Dataset letter F1 | Webcam letter F1 | Real letters called "other" (webcam) | Non-letter hands recognized | Non-letter hands that would type |
+|---|---|---|---|---|---|
+| MLP, 24 classes | 98.1% | **93.1%** | 0% | 0% | **69.2%** (mostly F) |
+| MLP + other | 98.0% | 87.7% | 3.7% (all F) | 85.1% | 7.5% |
+| **MLP + other + pinch guard** | **98.0%** | **91.0%** | **0%** | **84.6%** | **7.5%** |
+
+- **Resting hands typing a letter: 69% → 7.5%** of frames, for −2.1 points of webcam letter F1. A clear win for a practice tool: random F's while resting are worse than slightly lower accuracy, and the gate needs 10 frames in a row anyway.
+- Dataset letter F1 is unchanged (98.1 → 98.0).
+- Limitation: "other" data is one person, one webcam angle; the guard is a hand-written rule built from one observed failure. A cleaner fix: non-letter examples from the same source and angle as the letters (more signers, varied cameras).
+- The app and live demo use `mlp_other_final.pt` + the guard (`letter_probs`). Report numbers for the MLP-vs-CNN comparison stay with the 24-class model.
+
 ### Live demo and speed (`scripts/live_demo.py`)
 
 Webcam → MediaPipe → `normalize` → MLP → gate → typed text, with per-frame timings shown on screen and a median / 95th-percentile summary printed on exit.

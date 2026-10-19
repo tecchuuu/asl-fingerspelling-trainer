@@ -8,3 +8,5 @@ run_id,model,optimizer,lr,momentum,batch_size,dropout,scheduler,max_epochs,patie
 20261018-222208_mlp_adam_bs64,mlp,adam,0.001,,64,0.3,plateau,50,8,50,44,0.0337,0.1013,0.9713,0.9681,52376,157,block,True,True,42,"lr schedule, patience 8"
 20261018-222501_mlp_adam_bs64,mlp,adam,0.001,,64,0.5,plateau,50,8,50,45,0.0783,0.1165,0.9682,0.9651,52376,158,block,True,True,42,dropout
 20261018-232701_cnn_adam_bs64,cnn,adam,0.001,,64,0.3,plateau,50,8,40,32,0.0131,0.1342,0.9552,0.9516,96792,9154,block,True,True,42,"CNN baseline, MLP winning settings"
+20261019-140513_mlp_other_adam_bs64,mlp_other,adam,0.001,,64,0.3,plateau,50,8,42,34,0.0521,0.1069,0.9709,0.9601,52505,136,block,True,True,42,"MLP + other class, final settings"
+20261019-140902_mlp_other_adam_bs64,mlp_other,adam,0.001,,64,0.3,plateau,50,8,36,28,0.0529,0.1049,0.9679,0.9604,52505,113,block,True,True,42,"MLP + other class, F-like other samples removed (pinch < 0.4)"

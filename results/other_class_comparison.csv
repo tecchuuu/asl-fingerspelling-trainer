@@ -1,0 +1,4 @@
+model,dataset_letter_f1,dataset_letters_called_other,webcam_letter_f1,webcam_letters_called_other,nonletter_recognized_other,nonletter_would_type,typed_as
+MLP (24),0.9814,0.0000,0.9309,0.0000,0.0000,0.6915,"F 72, C 18, D 10"
+MLP + other (25),0.9797,0.0024,0.8767,0.0370,0.8507,0.0746,"F 5, B 4, O 2"
++ pinch guard,0.9799,0.0022,0.9100,0.0000,0.8458,0.0746,"F 5, B 4, O 2"

@@ -11,7 +11,6 @@ import time
 import cv2
 import mediapipe as mp
 import numpy as np
-import torch
 from mediapipe.tasks.python import BaseOptions
 from mediapipe.tasks.python.vision import HandLandmarker, HandLandmarkerOptions, RunningMode
 
@@ -19,7 +18,7 @@ from src import config
 from src.camera import CAMERA_INDEX, GREEN, WHITE, YELLOW, CameraReader, draw_hand, open_camera, window_closed
 from src.evaluate_webcam import load_final
 from src.gate import Gate
-from src.normalize import normalize
+from src.predict import letter_probs
 
 BACKSPACE = 8
 WINDOW = "Live fingerspelling"
@@ -87,9 +86,7 @@ def main():
             if result.hand_landmarks:
                 hand = result.hand_landmarks[0]
                 raw = np.array([(lm.x, lm.y, lm.z) for lm in hand], dtype=np.float32)
-                with torch.no_grad():
-                    logits = model(torch.from_numpy(normalize(raw, aspect=w / h)).unsqueeze(0))
-                probs = torch.softmax(logits, dim=1)[0].numpy()
+                probs = letter_probs(model, raw, aspect=w / h)
                 t2 = time.perf_counter()
                 top = int(probs.argmax())
                 guess = config.OTHER if top == config.OTHER_INDEX else config.LETTERS[top]

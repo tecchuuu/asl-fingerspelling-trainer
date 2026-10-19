@@ -18,6 +18,9 @@ BLOCK_SIZE = 100
 # "other" class: whole sessions held out for testing, and the size of capture blocks for train/val
 OTHER_TEST_SESSIONS = ("other-test",)
 OTHER_BLOCK = 50
+# Non-letter recordings where the thumb tip nearly touches the index tip look like F / O / D
+# (95% of dataset F's are within 0.31 palm lengths). They aren't clean "other" examples.
+OTHER_MIN_PINCH = 0.4
 
 
 def load_letters(with_crops=False):
@@ -61,14 +64,22 @@ def split_indices(labels, frames, mode="block", seed=config.SEED):
     return {k: np.concatenate(v) for k, v in splits.items()}
 
 
-def load_other(sessions):
-    """Normalized features of recorded non-letter poses, in capture order."""
+def pinch(features):
+    """Thumb tip to index tip distance in palm lengths (features are already palm-normalized)."""
+    hands = features.reshape(-1, config.NUM_LANDMARKS, 3)
+    return np.linalg.norm(hands[:, 4, :2] - hands[:, 8, :2], axis=1)
+
+
+def load_other(sessions, clean=True):
+    """Normalized features of recorded non-letter poses, in capture order.
+    clean drops the F/O-like ones (thumb touching index), see OTHER_MIN_PINCH."""
     parts = []
     for s in sessions:
         with np.load(config.OTHER_DIR / f"{s}.npz") as d:
             aspect = d["frame_size"][:, 0] / d["frame_size"][:, 1]
             parts.append(np.stack([normalize(lm, aspect=a) for lm, a in zip(d["landmarks"], aspect)]))
-    return np.concatenate(parts)
+    X = np.concatenate(parts)
+    return X[pinch(X) >= OTHER_MIN_PINCH] if clean else X
 
 
 def other_splits(seed=config.SEED):
