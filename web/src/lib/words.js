@@ -41,37 +41,37 @@ export const LETTER_TIPS = {
 
 export const CATEGORIES = [
   {
-    id: "alphabet", name: "Alphabet", emoji: "🔤",
+    id: "alphabet", name: "Alphabet", emoji: "🔤", sample: "ABCD",
     description: "Every letter on its own. Start here.",
     items: LETTERS,
   },
   {
-    id: "everyday", name: "Everyday", emoji: "👋",
+    id: "everyday", name: "Everyday", emoji: "👋", sample: "HELLO",
     items: ["HELLO", "LOVE", "HAND", "SIGN", "BOOK", "HOME", "NAME", "FRIEND", "FAMILY", "WORLD",
             "HAPPY", "SMILE", "SCHOOL", "LEARN", "SPELL", "MUSIC", "DANCE", "CHAIR", "PHONE", "MONEY", "HOUSE"],
   },
   {
-    id: "food", name: "Food", emoji: "🍎",
+    id: "food", name: "Food", emoji: "🍎", sample: "COFFEE",
     items: ["FOOD", "MILK", "CAFE", "APPLE", "BREAD", "FISH", "COFFEE", "RICE", "CAKE", "EGG",
             "CHEESE", "HONEY", "LEMON", "MANGO", "CANDY", "SALAD", "CORN", "BEAN", "SOUP", "PIE", "NOODLE"],
   },
   {
-    id: "animals", name: "Animals", emoji: "🐾",
+    id: "animals", name: "Animals", emoji: "🐾", sample: "PANDA",
     items: ["DOG", "BIRD", "HORSE", "MOUSE", "LION", "BEAR", "DUCK", "COW", "SHEEP", "SNAKE",
             "FROG", "SEAL", "WOLF", "DEER", "CRAB", "EAGLE", "SWAN", "PANDA", "MONKEY", "CAMEL", "KOALA"],
   },
   {
-    id: "colors", name: "Colors", emoji: "🎨",
+    id: "colors", name: "Colors", emoji: "🎨", sample: "YELLOW",
     items: ["RED", "BLUE", "GREEN", "YELLOW", "PURPLE", "ORANGE", "BLACK", "PINK", "GRAY", "GOLD",
             "BROWN", "SILVER"],
   },
   {
-    id: "nature", name: "Nature", emoji: "🌿",
+    id: "nature", name: "Nature", emoji: "🌿", sample: "RAINBOW",
     items: ["SUN", "MOON", "SNOW", "RAIN", "FIRE", "OCEAN", "CLOUD", "RAINBOW", "RIVER", "SKY",
             "LEAF", "ROCK", "SAND", "WIND", "ISLAND", "FLOWER"],
   },
   {
-    id: "doubles", name: "Double letters", emoji: "✌️",
+    id: "doubles", name: "Double letters", emoji: "✌️", sample: "BALLOON",
     description: "Words with a repeated letter: slide your hand sideways for the second one.",
     items: ["HELLO", "BOOK", "GOOD", "HAPPY", "APPLE", "QUEEN", "COFFEE", "SPELL", "BALL", "DOOR",
             "FEEL", "KEEP", "BEE", "BALLOON", "COOKIE", "SHEEP", "GREEN", "YELLOW"],

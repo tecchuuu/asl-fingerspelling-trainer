@@ -1,4 +1,5 @@
 import { useState } from "react";
+import HandSkeleton from "./components/HandSkeleton.jsx";
 import { useRoute } from "./lib/route.js";
 import { applyTheme, currentTheme } from "./lib/theme.js";
 import CheckPage from "./pages/CheckPage.jsx";
@@ -25,9 +26,12 @@ export default function App() {
   return (
     <>
       <nav className="nav">
-        <button className="brand" onClick={home}>✋ Fingerspelling Trainer</button>
+        <button className="brand" onClick={home} aria-label="Fingerspell, home">
+          <HandSkeleton letter="B" size={30} />
+          <span>Fingerspell</span>
+        </button>
         <button className={["home", "practice", "exam"].includes(view.page) && !view.letter ? "on" : ""} onClick={home}>
-          Categories
+          Home
         </button>
         <button className={view.page === "learn" || view.letter ? "on" : ""} onClick={() => setView({ page: "learn" })}>
           Learn
@@ -51,7 +55,9 @@ export default function App() {
         </button>
       </nav>
       {/* key: changing view unmounts the old page, which releases the camera */}
-      {view.page === "home" && <HomePage onStart={(categoryId, mode) => setView({ page: mode, categoryId })} />}
+      {view.page === "home" && (
+        <HomePage onStart={(categoryId, mode) => setView({ page: mode, categoryId })} onLearn={() => setView({ page: "learn" })} />
+      )}
       {view.page === "learn" && <LearnPage onTry={(letter) => setView({ page: "practice", letter })} />}
       {view.page === "practice" && (
         <PracticePage key={view.letter ?? view.categoryId} categoryId={view.categoryId} letter={view.letter}

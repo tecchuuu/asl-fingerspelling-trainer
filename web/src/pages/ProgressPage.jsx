@@ -105,8 +105,8 @@ export default function ProgressPage({ onStart }) {
               <div className="tooltip" style={{ left: hover.x, top: hover.y }}>
                 <b>{hover.letter}</b>{" "}
                 {hovered
-                  ? `· ${hovered.attempts} attempts · ${pct(hovered.accuracy)} correct · ${seconds(hovered.avg_ms_correct)} avg when right`
-                  : "· not tried yet"}
+                  ? `: ${pct(hovered.accuracy)} right over ${hovered.attempts} tries, ${seconds(hovered.avg_ms_correct)} on average when right`
+                  : ": not tried yet"}
               </div>
             )}
           </>

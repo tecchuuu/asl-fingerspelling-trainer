@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
+import HandSkeleton from "../components/HandSkeleton.jsx";
 import { getProgress } from "../lib/api.js";
 import { CATEGORIES } from "../lib/words.js";
 
-/** Category cards with progress from the attempt log. */
-export default function HomePage({ onStart }) {
+const HERO_WORD = "HELLO";
+
+/** Home: the hero spells a word in hand skeletons; below, one row per practice set. */
+export default function HomePage({ onStart, onLearn }) {
   const [progress, setProgress] = useState(null);
 
   useEffect(() => {
@@ -11,45 +14,67 @@ export default function HomePage({ onStart }) {
   }, []);
 
   const statsFor = (id) => progress?.categories.find((c) => c.category === id);
+  const totals = progress?.totals;
 
   return (
     <div className="page">
-      <h1>Fingerspelling practice</h1>
-      <p className="hint">
-        Pick a category. <b>Practice</b> shows the reference photo and lets you retry;
-        <b> Exam</b> hides the photo and scores your first try.
-        {progress?.totals?.attempts > 0 &&
-          ` So far: ${progress.totals.attempts} letters signed, ${Math.round(progress.totals.accuracy * 100)}% correct.`}
-      </p>
+      <section className="hero">
+        <div className="hero-word" aria-hidden="true">
+          {[...HERO_WORD].map((l, i) => (
+            <figure key={i}>
+              <HandSkeleton letter={l} size={112} />
+              <figcaption>{l}</figcaption>
+            </figure>
+          ))}
+        </div>
+        <h1 className="hero-title">Spell it with your hands.</h1>
+        <p className="lede">
+          Sign each letter to your webcam and see straight away whether the shape is right.
+          Practice with hints, then take an exam without them.
+        </p>
+        <div className="hero-actions">
+          <button onClick={() => onStart("alphabet", "practice")}>Start with the alphabet</button>
+          <button className="ghost" onClick={onLearn}>See how each letter looks</button>
+        </div>
+        {totals?.attempts > 0 && (
+          <p className="muted small">
+            You've signed {totals.attempts} letters so far, {Math.round(totals.accuracy * 100)}% of them right.
+          </p>
+        )}
+      </section>
 
-      <div className="cards">
+      <h2 className="section-title">Practice sets</h2>
+      <ul className="sets">
         {CATEGORIES.map((c) => {
           const s = statsFor(c.id);
           // Capped: items logged under a category that later left its word list still count in the log
           const done = Math.min(s?.items_completed ?? 0, c.items.length);
+          const unit = c.id === "alphabet" ? "letters" : "words";
           return (
-            <div key={c.id} className="card">
-              <div className="card-head">
-                <span className="emoji">{c.emoji}</span>
-                <div>
-                  <div className="card-title">{c.name}</div>
-                  <div className="muted small">{c.items.length} {c.id === "alphabet" ? "letters" : "words"}</div>
+            <li key={c.id} className="set">
+              <div className="set-name">
+                <span className="set-sample" aria-hidden="true">{c.sample}</span>
+                <span className="set-title">{c.name}</span>
+                <span className="muted small">{c.description ?? `${c.items.length} ${unit}, like ${c.items.slice(0, 3).join(", ")}`}</span>
+              </div>
+              <div className="set-progress">
+                <div className="bar thin" role="progressbar" aria-valuemin={0} aria-valuemax={c.items.length}
+                  aria-valuenow={done} aria-label={`${c.name}: ${done} of ${c.items.length} ${unit} done`}>
+                  <div style={{ width: `${(done / c.items.length) * 100}%` }} />
                 </div>
+                <span className="small muted">
+                  {done} of {c.items.length} {unit} done
+                  {s?.best_exam != null && <>, best exam {Math.round(s.best_exam * 100)}%</>}
+                </span>
               </div>
-              <p className="muted small card-desc">{c.description ?? c.items.slice(0, 4).join(", ") + ", ..."}</p>
-              <div className="bar thin"><div style={{ width: `${(done / c.items.length) * 100}%` }} /></div>
-              <div className="muted small card-stats">
-                <span>{done}/{c.items.length} done</span>
-                <span>{s?.best_exam != null ? `best exam ${Math.round(s.best_exam * 100)}%` : "no exam yet"}</span>
-              </div>
-              <div className="card-actions">
+              <div className="set-actions">
                 <button onClick={() => onStart(c.id, "practice")}>Practice</button>
                 <button className="ghost" onClick={() => onStart(c.id, "exam")}>Exam</button>
               </div>
-            </div>
+            </li>
           );
         })}
-      </div>
+      </ul>
     </div>
   );
 }

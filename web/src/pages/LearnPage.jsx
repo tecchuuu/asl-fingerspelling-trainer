@@ -28,9 +28,9 @@ export default function LearnPage({ onTry }) {
 
         <div className="panel learn-detail">
           <div className="learn-head">
-            <button className="ghost" onClick={() => go(-1)} aria-label="Previous letter">←</button>
+            <button className="ghost icon" onClick={() => go(-1)} aria-label="Previous letter">‹</button>
             <div className="ref-letter">{selected}</div>
-            <button className="ghost" onClick={() => go(1)} aria-label="Next letter">→</button>
+            <button className="ghost icon" onClick={() => go(1)} aria-label="Next letter">›</button>
           </div>
           <img src={`/letters/${selected}.jpg`} alt={`ASL ${selected}`} />
           <p>{info.tip}</p>

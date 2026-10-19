@@ -121,18 +121,23 @@ function draw(canvas, video, landmarks) {
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, w, h);
   if (!landmarks) return;
-  ctx.strokeStyle = "#22c55e";
-  ctx.lineWidth = 3;
+  // Brand colours, fixed (not theme tokens): they're drawn over video, not over the page
+  ctx.strokeStyle = "#5b6bff";
+  ctx.lineWidth = 4;
+  ctx.lineCap = "round";
   for (const { start, end } of HAND_CONNECTIONS) {
     ctx.beginPath();
     ctx.moveTo(landmarks[start].x * w, landmarks[start].y * h);
     ctx.lineTo(landmarks[end].x * w, landmarks[end].y * h);
     ctx.stroke();
   }
-  ctx.fillStyle = "#ef4444";
+  ctx.fillStyle = "#ffc531";
+  ctx.strokeStyle = "#16183d";
+  ctx.lineWidth = 1.5;
   for (const p of landmarks) {
     ctx.beginPath();
-    ctx.arc(p.x * w, p.y * h, 4, 0, 2 * Math.PI);
+    ctx.arc(p.x * w, p.y * h, 5, 0, 2 * Math.PI);
     ctx.fill();
+    ctx.stroke();
   }
 }

@@ -15,7 +15,7 @@ const NEXT_DELAY_MS = 1200;
 export default function PracticePage({ categoryId, letter, onBack }) {
   // letter: practise just that one letter, from the Learn page
   const category = letter
-    ? { id: "learn", name: `Letter ${letter}`, emoji: "📖", items: [letter] }
+    ? { id: "learn", name: `Letter ${letter}`, items: [letter] }
     : categoryById(categoryId);
   const queue = useRef(makeQueue(category));
   const [item, setItem] = useState(() => queue.current.pop());
@@ -83,10 +83,10 @@ export default function PracticePage({ categoryId, letter, onBack }) {
   return (
     <div className="page">
       <div className="toolbar">
-        <button className="ghost" onClick={onBack}>← {letter ? "Learn" : "Categories"}</button>
-        <span className="toolbar-title">{category.emoji} {category.name} · Practice</span>
+        <button className="ghost" onClick={onBack}>{letter ? "Back to Learn" : "All sets"}</button>
+        <span className="toolbar-title">{category.name} practice</span>
         <span className="muted">
-          {stats.items} done · {stats.letters} letters · {stats.misses} misses
+          {stats.letters} right, {stats.misses} missed
         </span>
         <button className="ghost" onClick={skip}>Skip</button>
       </div>
@@ -99,8 +99,7 @@ export default function PracticePage({ categoryId, letter, onBack }) {
 
         {target && (
           <div className="panel reference">
-            <div className="muted">Sign</div>
-            <div className="ref-letter">{target}</div>
+            <div className="ref-letter" aria-label={`Sign ${target}`}>{target}</div>
             <img src={`/letters/${target}.jpg`} alt={`ASL ${target}`} />
             {LETTER_NOTES[target] && <p className="warn">⚠️ {LETTER_NOTES[target]}</p>}
             {index > 0 && item[index - 1] === target && (

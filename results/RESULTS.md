@@ -459,6 +459,17 @@ Page: simulated banner with an expandable method, stat tiles, "where the class g
 - The current page was only React state, so F5 returned to home and Back didn't move between pages. Now it lives in the URL hash (`web/src/lib/route.js`): `#/`, `#/learn`, `#/letter/M`, `#/practice/food`, `#/exam/animals`, `#/free`, `#/progress`, `#/trainer`. A hash needs no server changes (FastAPI and Vite only serve `index.html`); unknown or stale links (bad category, J, typos) fall back to home.
 - Checked: every page round-trips through its URL; in a browser, F5 on Food Practice stays there, Back/Forward step through pages, typing a URL opens that page.
 
+### Visual redesign ("Fingerspell")
+
+The first version looked like a generic dashboard template (dark slate, green buttons, identical cards, emojis). Redesigned around the subject:
+
+- **Idea: the letter is the hero, the hand skeleton is the brand.** The 21-point skeleton the app already draws over the camera became the logo and the home hero, which spells HELLO in hands. The skeletons are **real data**: per letter, the training sample closest to the letter's median normalized shape, mirrored to the camera view (`scripts/make_skeletons.py` → `web/src/lib/skeletons.json`, 7 KB), drawn by `HandSkeleton.jsx`. The camera overlay uses the same colours.
+- **Colour: "highlighter on a worksheet"**: indigo ink on cool paper, signal blue (`#3346E8` light / `#8090FF` dark) for bones and actions, highlighter yellow only for "what you're doing now" (current letter, gate progress). Both themes from the same tokens.
+- **Type**: Bricolage Grotesque for letters and headings (distinctive shapes at huge sizes; the target letter is 8.5 rem), Atkinson Hyperlegible Next for body text (designed by the Braille Institute for legibility). Both bundled from npm, not loaded from Google, so the demo works offline.
+- **Layout**: home practice sets as rows showing each set's word in large type (ABCD, HELLO, COFFEE, PANDA, YELLOW, RAINBOW, BALLOON) instead of emoji cards; the current letter in a word sits on a highlighter stroke; panels are flat (border, no shadows); dot-separated meta text and arrow-suffixed buttons replaced by plain sentences.
+- **Contrast checked**: button text 6.6:1 / 6.5:1, secondary text 5.8:1 / 7.9:1, correct/missed text ≥ 5:1 on light; current-letter text on its highlighter 10.8:1 light, 4.1:1 dark (large bold text, ≥ 3:1 needed). Fixed along the way: the dark-mode current letter was white on bright yellow (unreadable) → darker highlighter shade; letters not reached yet were 1.2:1 (nearly invisible) → 3.3:1 / 3.6:1; skeleton joints were too large and clumped on closed hands (E, O) → smaller joints, thicker bones; the trainer's "77% → 83%" tile wrapped → numbers kept on one line.
+- Verified with screenshots in light and dark: home, practice, learn, progress, trainer, free spell; no console errors.
+
 ### Live demo notes
 
 - Gate settings: default (10 frames, 0.8) felt fine in the first live try; note that the 10-frame hold is fps-dependent (~0.6 s at 16 FPS, ~0.33 s at 30 FPS).

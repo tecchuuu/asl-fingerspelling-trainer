@@ -130,8 +130,8 @@ export default function ExamPage({ categoryId, onBack, onPractice }) {
   return (
     <div className="page">
       <div className="toolbar">
-        <button className="ghost" onClick={onBack}>← Categories</button>
-        <span className="toolbar-title">{category.emoji} {category.name} · Exam</span>
+        <button className="ghost" onClick={onBack}>All sets</button>
+        <span className="toolbar-title">{category.name} exam</span>
         {phase === "running" && (
           <span className="muted">{category.id === "alphabet" ? "Letter" : "Word"} {itemIdx + 1} of {items.length}</span>
         )}
@@ -174,7 +174,7 @@ export default function ExamPage({ categoryId, onBack, onPractice }) {
           <div className="card-actions">
             <button onClick={start}>Try again</button>
             <button className="ghost" onClick={onPractice}>Practice {category.name}</button>
-            <button className="ghost" onClick={onBack}>Categories</button>
+            <button className="ghost" onClick={onBack}>All sets</button>
           </div>
         </div>
       )}
@@ -184,9 +184,8 @@ export default function ExamPage({ categoryId, onBack, onPractice }) {
           <LiveCamera onFrame={onFrame} live={live} progress={progress} />
           {phase === "running" && (
             <div className="panel reference">
-              <div className="muted">Sign</div>
-              <div className="ref-letter">{target}</div>
-              <p className="muted small">No photo in exam mode.</p>
+              <div className="ref-letter" aria-label={`Sign ${target}`}>{target}</div>
+              <p className="muted small">No photo in the exam: sign it from memory.</p>
               {index > 0 && item[index - 1] === target && (
                 <p className="hint">Same letter again: slide your hand sideways a little.</p>
               )}
