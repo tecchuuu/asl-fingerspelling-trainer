@@ -376,6 +376,24 @@ Design choice: a **goal to follow, not a race**. No timer, no speed score: the a
 - **Gate in the browser** (`web/src/lib/gate.js`): JavaScript port of `src/gate.py`, same settings; `web/scripts/check-gate.mjs` runs the same 14 cases as the Python check, all pass.
 - Verified in a browser (without camera): layout, word display, reference photo loading, Words/Letters toggle, Skip, T warning. **Not yet verified: signing with the live camera.**
 
+### Learning hub plan
+
+Scope agreed for the app (built in this order; 1–4 core, 5 needed for the business case, 6–7 cut first):
+1. Attempt log (SQLite) 2. Categories + home page (spell page becomes "Practice") 3. Exam mode 4. Learner dashboard (letter accuracy grid, exam history) 5. Trainer dashboard + simulated 20-learner class 6. Learn grid (letter photos + tips) 7. Free mode with auto-space.
+Deliberately out of scope: login/accounts (one learner per browser, as in the roadmap), videos or long lesson text, levels/XP/achievements.
+
+### Attempt log (`app/db.py`, checks in `scripts/check_db.py`)
+
+SQLite file `data/attempts.db` (gitignored: personal usage data). Two tables:
+- `sessions`: one practice run or exam (mode, category, start/end, items in the exam, exam score).
+- `attempts`: one row per letter the gate types: item (word), position, target letter, typed letter, correct, confidence, **ms since the letter was asked for**.
+
+API: `POST /api/sessions`, `POST /api/sessions/{id}/finish`, `POST /api/attempts`, `GET /api/progress` (per-letter attempts/accuracy/avg time, top confusions, per-category completed words and best exam, exam history, totals).
+- **Exam score = share of letters right on the first try** (later attempts at the same letter don't count).
+- A category's word counts as completed when its last letter was signed correctly.
+- Checks (throwaway database, real one untouched): 9/9 pass, covering practice and exam sessions, first-try exam scoring (MILK with one miss → 0.75), per-letter accuracy and timing, confusions, category stats, exam history, invalid input rejected.
+- The spell page starts a practice session per mode (words / alphabet) and logs every typed letter fire-and-forget (a failed log write never interrupts practice). Verified in a browser: sessions are created on load and on mode switch.
+
 ### Live demo notes
 
 - Gate settings: default (10 frames, 0.8) felt fine in the first live try; note that the 10-frame hold is fps-dependent (~0.6 s at 16 FPS, ~0.33 s at 30 FPS).

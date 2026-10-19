@@ -1,5 +1,6 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Camera from "../components/Camera.jsx";
+import { logAttempt, startSession } from "../lib/api.js";
 import { useLetterStream } from "../lib/useLetterStream.js";
 import { LETTER_NOTES, makeQueue } from "../lib/words.js";
 
@@ -18,8 +19,22 @@ export default function SpellPage() {
   const [feedback, setFeedback] = useState(null); // { kind: "good" | "bad" | "done", text }
   const [session, setSession] = useState({ items: 0, letters: 0, misses: 0 });
   const busy = useRef(false); // true between finishing an item and showing the next
+  const sessionId = useRef(null);
+  const promptedAt = useRef(performance.now()); // when the current letter was first asked for
 
   const target = item[index];
+
+  // One logged practice session per mode; a new one when switching Words / Letters
+  useEffect(() => {
+    sessionId.current = null;
+    startSession("practice", mode === "letters" ? "alphabet" : "words")
+      .then((id) => (sessionId.current = id))
+      .catch((err) => console.warn("session not started:", err));
+  }, [mode]);
+
+  useEffect(() => {
+    promptedAt.current = performance.now();
+  }, [item, index]);
 
   const nextItem = useCallback((newMode = mode) => {
     if (!queue.current.length) queue.current = makeQueue(newMode);
@@ -29,8 +44,15 @@ export default function SpellPage() {
     busy.current = false;
   }, [mode]);
 
-  const onTyped = useCallback((letter) => {
+  const onTyped = useCallback((letter, prediction) => {
     if (busy.current) return;
+    if (sessionId.current) {
+      logAttempt({
+        session_id: sessionId.current, item, position: index, target, typed: letter,
+        confidence: prediction?.confidence ?? null,
+        ms: Math.round(performance.now() - promptedAt.current),
+      });
+    }
     if (letter !== target) {
       setFeedback({ kind: "bad", text: `Looks like ${letter}, try again` });
       setSession((s) => ({ ...s, misses: s.misses + 1 }));

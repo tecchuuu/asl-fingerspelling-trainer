@@ -12,6 +12,7 @@ waits ~2 s before falling back, which made every request take 2 s instead of 2 m
 import base64
 import csv
 from datetime import datetime
+from typing import Literal
 
 import cv2
 import mediapipe as mp
@@ -22,6 +23,7 @@ from mediapipe.tasks.python import BaseOptions
 from mediapipe.tasks.python.vision import HandLandmarker, HandLandmarkerOptions, RunningMode
 from pydantic import BaseModel, Field
 
+from app import db
 from src import config
 from src.evaluate_webcam import load_final
 from src.predict import letter_probs
@@ -56,6 +58,47 @@ def predict_raw(raw, width, height):
         confidence=float(probs[order[0]]),
         top3=[(CLASSES[i], float(probs[i])) for i in order[:3]],
     )
+
+
+db.init()
+
+
+class SessionStart(BaseModel):
+    mode: Literal["practice", "exam"]
+    category: str = Field(min_length=1, max_length=40)
+    items_total: int | None = None
+
+
+class Attempt(BaseModel):
+    session_id: int
+    item: str = Field(min_length=1, max_length=40)
+    position: int = Field(ge=0)
+    target: str = Field(min_length=1, max_length=5)
+    typed: str = Field(min_length=1, max_length=5)
+    confidence: float | None = None
+    ms: int | None = Field(default=None, ge=0)
+
+
+@app.post("/api/sessions")
+def start_session(req: SessionStart):
+    return {"session_id": db.start_session(req.mode, req.category, req.items_total)}
+
+
+@app.post("/api/sessions/{session_id}/finish")
+def finish_session(session_id: int):
+    score = db.finish_session(session_id)
+    return {"session_id": session_id, "score": score}
+
+
+@app.post("/api/attempts")
+def add_attempt(a: Attempt):
+    db.add_attempt(a.session_id, a.item, a.position, a.target, a.typed, a.confidence, a.ms)
+    return {"ok": True}
+
+
+@app.get("/api/progress")
+def progress():
+    return db.progress()
 
 
 @app.get("/api/health")
