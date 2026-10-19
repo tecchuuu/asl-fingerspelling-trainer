@@ -314,9 +314,21 @@ The MLP predicts every frame (~30/s). While the hand moves between letters it fl
 
 Webcam → MediaPipe → `normalize` → MLP → gate → typed text, with per-frame timings shown on screen and a median / 95th-percentile summary printed on exit.
 
-- Gate settings (tuned):
+- **Speed** (1,342 frames, CPU, `mlp_other` + pinch guard):
+
+  | Step | Median | 95th percentile |
+  |---|---|---|
+  | MediaPipe hand landmarker | 10.58 ms | 13.17 ms |
+  | Normalize + MLP + guard | **0.25 ms** | 0.40 ms |
+  | **Total processing per frame** | **10.84 ms** | **13.18 ms** |
+
+  - **Target ≤ 33 ms per frame: met, ~3× under.** Processing could sustain ~90 FPS.
+  - The live view ran at ~16 FPS: that's the webcam's frame rate (a new frame every ~62 ms; the pipeline finishes in ~11 ms and waits).
+  - Raw camera test (no MediaPipe, no model), same room light: DirectShow delivers **~12–13 fps** (ignores MJPG and 30 fps requests); Media Foundation reports **29 fps** with no failed reads over 20 s, but **261 of 582 frames were exact duplicates** of the previous one, i.e. **~16 new images per second** padded to 30. So the camera itself produces ~15–16 frames/s in this light; webcams lengthen exposure in dim light. Kept DirectShow (stable, small difference). Brighter light is the fix, and also helps accuracy (room light 98.6% vs dark 87%).
+  - MediaPipe is ~98% of the per-frame cost; the MLP is 0.25 ms. So the CNN's 1.4 ms (section 5) wouldn't have been a speed problem either: the landmark approach wins on accuracy, not speed.
+- Gate settings: default (10 frames, 0.8) felt fine in the first live try; note that the 10-frame hold is fps-dependent (~0.6 s at 16 FPS, ~0.33 s at 30 FPS).
 - Double-letter rule (tested live):
-- End-to-end ms per frame:
+- Word spaces: ASL marks word breaks with a pause, not a sign. Not needed for the drill and spell-the-word modes; an automatic space after ~1 s without a letter would cover free-spell mode.
 
 ## 7. Problems and fixes
 
