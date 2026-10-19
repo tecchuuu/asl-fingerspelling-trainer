@@ -23,6 +23,9 @@ from src.normalize import normalize
 
 MODELS_DIR = config.ROOT / "models"
 SUMMARY_CSV = config.RESULTS_DIR / "webcam_summary.csv"
+# Sessions signed in standard ASL where the dataset differs (T, K, P). Kept out of the
+# main webcam score: they measure the dataset's labelling, not real-world robustness.
+STANDARD_PREFIX = "standard"
 
 
 def load_final(name):
@@ -53,6 +56,25 @@ def predict(models, features, crops):
     }
 
 
+def report_standard_asl(session, models):
+    """Per letter: how often each model accepts the standard-ASL version, and what it predicts instead."""
+    features, crops, labels = load_session(session)
+    if len(labels) == 0:
+        return
+    preds = predict(models, features, crops)
+    print(f"{session} (standard ASL, not in the main score):")
+    for letter_idx in np.unique(labels):
+        mask = labels == letter_idx
+        parts = []
+        for m, p in preds.items():
+            got = p[mask]
+            others = [config.LETTERS[i] for i in got[got != letter_idx]]
+            common = max(set(others), key=others.count) if others else "-"
+            parts.append(f"{m} accepts {np.mean(got == letter_idx):.0%} (else mostly {common})")
+        print(f"  {config.LETTERS[letter_idx]} (n={mask.sum()}): " + " | ".join(parts))
+    print()
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--sessions", nargs="+", default=None, help="default: every session in data/webcam_test")
@@ -61,6 +83,9 @@ def main():
 
     sessions = args.sessions or sorted(p.stem for p in config.WEBCAM_TEST_DIR.glob("*.npz"))
     models = {"mlp": load_final("mlp"), "cnn": load_final("cnn")}
+    for s in [s for s in sessions if s.startswith(STANDARD_PREFIX)]:
+        report_standard_asl(s, models)
+    sessions = [s for s in sessions if not s.startswith(STANDARD_PREFIX)]
 
     rows, all_labels, all_preds = [], [], {"MLP": [], "CNN": []}
     print(f"{'session':<16}{'n':>5}{'MLP F1':>10}{'CNN F1':>10}{'MLP acc':>10}{'CNN acc':>10}")

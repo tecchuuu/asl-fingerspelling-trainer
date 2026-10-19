@@ -72,11 +72,11 @@ def save_session(name, samples, meta):
     meta_path.write_text(json.dumps({**meta, "samples": len(samples["labels"])}, indent=2))
 
 
-def queue_from(samples):
+def queue_from(samples, letters, repeats):
     """Letters still to record, in a fixed shuffled order (same order when a session is resumed)."""
-    order = list(np.random.default_rng(config.SEED).permutation(config.LETTERS))
-    done = {l: samples["labels"].count(l) for l in config.LETTERS}
-    return [l for l in order for _ in range(REPEATS - done[l])]
+    order = list(np.random.default_rng(config.SEED).permutation(letters))
+    done = {l: samples["labels"].count(l) for l in letters}
+    return [l for l in order for _ in range(repeats - done[l])]
 
 
 def open_camera():
@@ -151,10 +151,15 @@ def main():
     parser.add_argument("--session", required=True, help="short name, e.g. day1-window-right")
     parser.add_argument("--hand", choices=["right", "left"], required=True)
     parser.add_argument("--notes", default="", help="lighting, background, distance")
+    parser.add_argument("--letters", nargs="+", default=config.LETTERS, help="only these letters, e.g. T K P")
+    parser.add_argument("--repeats", type=int, default=REPEATS, help="captures per letter")
     args = parser.parse_args()
 
     samples = load_session(args.session)
-    queue = queue_from(samples)
+    unknown = set(args.letters) - set(config.LETTERS)
+    if unknown:
+        parser.error(f"unknown letters: {sorted(unknown)}")
+    queue = queue_from(samples, args.letters, args.repeats)
     if not queue:
         print(f"Session '{args.session}' is already complete ({len(samples['labels'])} samples).")
         return
@@ -172,7 +177,7 @@ def main():
         return
     camera = CameraReader(cap)
 
-    total = len(config.LETTERS) * REPEATS
+    total = len(args.letters) * args.repeats
     message, message_color = "", WHITE
     last_capture = 0.0
     last_ts = -1
@@ -198,7 +203,7 @@ def main():
             letter = queue[0]
             rep = samples["labels"].count(letter) + 1
             cooling = time.monotonic() - last_capture < COOLDOWN_S
-            cv2.putText(preview, f"Sign: {letter}  ({rep}/{REPEATS})", (10, 50),
+            cv2.putText(preview, f"Sign: {letter}  ({rep}/{args.repeats})", (10, 50),
                         cv2.FONT_HERSHEY_SIMPLEX, 1.4, YELLOW, 3)
             cv2.putText(preview, f"{len(samples['labels'])}/{total} captured   SPACE capture  U undo  Q quit",
                         (10, preview.shape[0] - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.55, WHITE, 2)
@@ -215,7 +220,7 @@ def main():
                 undone = samples["labels"][-1]
                 for k in samples:
                     samples[k].pop()
-                queue = queue_from(samples)
+                queue = queue_from(samples, args.letters, args.repeats)
                 message, message_color = f"Undid last {undone}", WHITE
             if key == ord(" ") and not cooling:
                 if not result.hand_landmarks:
