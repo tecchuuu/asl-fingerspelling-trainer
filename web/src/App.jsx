@@ -2,12 +2,15 @@ import { useState } from "react";
 import { applyTheme, currentTheme } from "./lib/theme.js";
 import CheckPage from "./pages/CheckPage.jsx";
 import ExamPage from "./pages/ExamPage.jsx";
+import FreePage from "./pages/FreePage.jsx";
 import HomePage from "./pages/HomePage.jsx";
+import LearnPage from "./pages/LearnPage.jsx";
 import PracticePage from "./pages/PracticePage.jsx";
 import ProgressPage from "./pages/ProgressPage.jsx";
 import TrainerPage from "./pages/TrainerPage.jsx";
 
-// view: { page: "home" | "progress" | "trainer" | "check" } | { page: "practice" | "exam", categoryId }
+// view: { page: "home" | "learn" | "free" | "progress" | "trainer" | "check" } | { page: "practice" | "exam", categoryId }
+//       | { page: "practice", letter } (one letter, from Learn)
 export default function App() {
   const [view, setView] = useState({ page: "home" });
   const home = () => setView({ page: "home" });
@@ -22,8 +25,14 @@ export default function App() {
     <>
       <nav className="nav">
         <button className="brand" onClick={home}>✋ Fingerspelling Trainer</button>
-        <button className={["home", "practice", "exam"].includes(view.page) ? "on" : ""} onClick={home}>
+        <button className={["home", "practice", "exam"].includes(view.page) && !view.letter ? "on" : ""} onClick={home}>
           Categories
+        </button>
+        <button className={view.page === "learn" || view.letter ? "on" : ""} onClick={() => setView({ page: "learn" })}>
+          Learn
+        </button>
+        <button className={view.page === "free" ? "on" : ""} onClick={() => setView({ page: "free" })}>
+          Free spell
         </button>
         <button className={view.page === "progress" ? "on" : ""} onClick={() => setView({ page: "progress" })}>
           My progress
@@ -42,11 +51,16 @@ export default function App() {
       </nav>
       {/* key: changing view unmounts the old page, which releases the camera */}
       {view.page === "home" && <HomePage onStart={(categoryId, mode) => setView({ page: mode, categoryId })} />}
-      {view.page === "practice" && <PracticePage key={view.categoryId} categoryId={view.categoryId} onBack={home} />}
+      {view.page === "learn" && <LearnPage onTry={(letter) => setView({ page: "practice", letter })} />}
+      {view.page === "practice" && (
+        <PracticePage key={view.letter ?? view.categoryId} categoryId={view.categoryId} letter={view.letter}
+          onBack={view.letter ? () => setView({ page: "learn" }) : home} />
+      )}
       {view.page === "exam" && (
         <ExamPage key={view.categoryId} categoryId={view.categoryId} onBack={home}
           onPractice={() => setView({ page: "practice", categoryId: view.categoryId })} />
       )}
+      {view.page === "free" && <FreePage />}
       {view.page === "progress" && <ProgressPage onStart={(categoryId, mode) => setView({ page: mode, categoryId })} />}
       {view.page === "trainer" && <TrainerPage />}
       {view.page === "check" && <CheckPage />}

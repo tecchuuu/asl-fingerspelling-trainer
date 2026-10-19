@@ -12,8 +12,11 @@ const NEXT_DELAY_MS = 1200;
  * with its reference photo; a correct sign turns it green and moves on, a wrong one shows what
  * the model saw and stays. Each round serves every item once, shuffled.
  */
-export default function PracticePage({ categoryId, onBack }) {
-  const category = categoryById(categoryId);
+export default function PracticePage({ categoryId, letter, onBack }) {
+  // letter: practise just that one letter, from the Learn page
+  const category = letter
+    ? { id: "learn", name: `Letter ${letter}`, emoji: "📖", items: [letter] }
+    : categoryById(categoryId);
   const queue = useRef(makeQueue(category));
   const [item, setItem] = useState(() => queue.current.pop());
   const [index, setIndex] = useState(0);
@@ -80,7 +83,7 @@ export default function PracticePage({ categoryId, onBack }) {
   return (
     <div className="page">
       <div className="toolbar">
-        <button className="ghost" onClick={onBack}>← Categories</button>
+        <button className="ghost" onClick={onBack}>← {letter ? "Learn" : "Categories"}</button>
         <span className="toolbar-title">{category.emoji} {category.name} · Practice</span>
         <span className="muted">
           {stats.items} done · {stats.letters} letters · {stats.misses} misses

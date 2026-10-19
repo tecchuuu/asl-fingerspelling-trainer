@@ -448,6 +448,12 @@ Results (simulated):
 
 Page: simulated banner with an expandable method, stat tiles, "where the class gets stuck" bars (one series, cause noted only where fewer than half mastered it), two separate small line charts (letters mastered, exam score: different scales, so never on one axis), assumption inputs, learner table (flagged by default, "show all"). Chart colour `--series-1` and the warning colour checked for contrast on both theme surfaces. Verified with screenshots in light and dark, no console errors.
 
+### Learn page + Free spelling (hub steps 6–7)
+
+- **Learn**: all 24 letters as a photo grid; selecting one shows the large photo, a one-line handshape tip, the letters it's easily mixed up with (taken from the model's actual confusions: M/N, A/S/E, G/H, P/Q, O/C, U/V/R, K/V), the T note, and **"Try it with the camera"**, which opens Practice for just that letter (logged as category `learn`). The O tip mentions tilting the hand slightly (the known O → C limitation).
+- **Free spelling**: no target, whatever is signed is typed. **Automatic space**: when the hand is gone or resting ("other") for 1.2 s after a letter, a space is added, matching how ASL marks word breaks with a pause. Delete / Clear / Copy buttons; blinking caret respects reduced-motion. Not logged (no right answer to score).
+- Verified in a browser: Learn grid (24 photos loaded), letter detail, Try it → single-letter practice → back to Learn, Free page with its buttons disabled until there's text. **Not verified: the auto-space timing with a live camera.**
+
 ### Live demo notes
 
 - Gate settings: default (10 frames, 0.8) felt fine in the first live try; note that the 10-frame hold is fps-dependent (~0.6 s at 16 FPS, ~0.33 s at 30 FPS).
