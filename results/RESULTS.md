@@ -174,6 +174,14 @@ Final models chosen by **validation** F1, copied to `models/mlp_final.pt` and `m
 - Each capture saves the landmarks (MLP) and a 64×64 crop made by the same `crop_hand` as the dataset (CNN). Only the hand crop is stored, not the full frame.
 - Detection runs on the **raw camera frame**, which is what gets saved; only the on-screen preview is mirrored, for comfort. Mirror augmentation in training covers either orientation.
 - Frame size is saved per sample: webcam frames are 640×480, so the MLP gets `normalize(..., aspect=4/3)`.
+- **Dataset handshape check** (spotted while recording; all 24 letters checked on 6 random training photos each, T/P/X also at full size; reference sheet `figures/letter_reference.png`). Judged by eye against standard ASL, not by an ASL expert — verify T against an ASL dictionary before citing it.
+  - **T: non-standard.** Dataset = fingers curled, index half-raised, **thumb sticking out sideways**. Standard ASL T = fist with the thumb tucked between index and middle finger. Consistent across all photos checked.
+  - **P: variant.** Index points out and thumb touches the middle finger (as in P), but the hand is horizontal instead of pointing down, and thumb + middle form a closed ring.
+  - **K: variant** (spotted by me while recording). Dataset = V shape with the thumb lying across the front of the middle finger, low down. Standard ASL K = thumb tip pressed up between index and middle, against the middle finger's middle joint. Still distinct from V in the data (K test F1 ~99%).
+  - **X: fine.** Hooked index finger in nearly all photos. (A first look at small, dark thumbnails wrongly suggested a straight index.)
+  - Other 20 letters: consistent with standard ASL in the photos checked.
+  - Decision: **in the main webcam sessions every letter is signed like the dataset reference sheet** (natural angle and position), so the test measures generalization to a new person/camera/lighting, not disagreement about handshapes. A separate `standard-asl` session will record the correct ASL version of the letters that differ (T, K, P, and any found later).
+  - Consequence for the product: a trainer built on this data would accept the dataset's T and reject a correct ASL T, i.e. teach a wrong sign. Fix for a real product: re-record or relabel T (and check P), or use a signer-verified dataset. Possible extra test: a few standard-ASL T and P captures to measure how often the models reject them.
 - Each session has a name and notes (lighting, background, distance, hand) in `data/webcam_test/<session>.json`. Planned conditions: daylight / night lamp, plain / busy background, near / far, right / left hand, different days.
 
 ## 6. Live app
@@ -185,5 +193,6 @@ Final models chosen by **validation** F1, copied to `models/mlp_final.pt` and `m
 ## 7. Problems and fixes
 
 - **Webcam stopped sending frames on Windows.** OpenCV's default backend (MSMF) dropped the stream after a few seconds. Fixed by opening the camera with DirectShow (`cv2.CAP_DSHOW`).
+- **Webcam freezes during long recording sessions.** In `record_test.py` the preview froze after a few minutes, then eventually "Camera stopped sending frames". Cause: the camera kept returning the same stale frame, which looks like a normal successful read. Fixes in `CameraReader`: retry failed reads for ~1.5 s; treat ~1.5 s of byte-identical frames as frozen (a live sensor always adds noise) and reconnect the camera automatically; request MJPG at 640×480 to reduce USB bandwidth. Tested with a fake camera that freezes; not yet confirmed on the real webcam.
 
 ## 8. Report lines

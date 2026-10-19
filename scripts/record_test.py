@@ -79,6 +79,64 @@ def queue_from(samples):
     return [l for l in order for _ in range(REPEATS - done[l])]
 
 
+def open_camera():
+    backend = cv2.CAP_DSHOW if sys.platform == "win32" else cv2.CAP_ANY
+    cap = cv2.VideoCapture(CAMERA_INDEX, backend)
+    # MJPG uses less USB bandwidth than raw frames, which makes some webcams drop out less
+    cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+    return cap
+
+
+def reconnect(cap):
+    cap.release()
+    for _ in range(3):
+        cap = open_camera()
+        ok, frame = cap.read()
+        if ok:
+            print("Camera back.")
+            return cap, frame
+        cap.release()
+        time.sleep(1)
+    return cap, None
+
+
+class CameraReader:
+    """Reads frames and recovers from the two ways this webcam fails:
+    returning nothing, and silently repeating the same frozen frame."""
+
+    STALE_FRAMES = 45  # ~1.5 s of identical frames; a live sensor always adds a little noise
+
+    def __init__(self, cap):
+        self.cap = cap
+        self.prev = None
+        self.stale = 0
+
+    def read(self):
+        for _ in range(30):
+            ok, frame = self.cap.read()
+            if ok:
+                break
+            time.sleep(0.05)
+        else:
+            print("Camera dropped out, reconnecting...")
+            return self._reconnect()
+
+        small = frame[::8, ::8]
+        self.stale = self.stale + 1 if self.prev is not None and np.array_equal(small, self.prev) else 0
+        self.prev = small
+        if self.stale >= self.STALE_FRAMES:
+            print("Camera image frozen, reconnecting...")
+            return self._reconnect()
+        return frame
+
+    def _reconnect(self):
+        self.cap, frame = reconnect(self.cap)
+        self.prev, self.stale = None, 0
+        return frame
+
+
 def draw_hand(frame, landmarks):
     h, w = frame.shape[:2]
     points = [(int(lm.x * w), int(lm.y * h)) for lm in landmarks]
@@ -108,11 +166,11 @@ def main():
         running_mode=RunningMode.VIDEO,
         num_hands=1,
     )
-    backend = cv2.CAP_DSHOW if sys.platform == "win32" else cv2.CAP_ANY
-    cap = cv2.VideoCapture(CAMERA_INDEX, backend)
+    cap = open_camera()
     if not cap.isOpened():
         print(f"Could not open camera {CAMERA_INDEX}.")
         return
+    camera = CameraReader(cap)
 
     total = len(config.LETTERS) * REPEATS
     message, message_color = "", WHITE
@@ -121,9 +179,9 @@ def main():
 
     with HandLandmarker.create_from_options(options) as landmarker:
         while queue:
-            ok, frame = cap.read()
-            if not ok:
-                print("Camera stopped sending frames.")
+            frame = camera.read()
+            if frame is None:
+                print("Camera stopped sending frames and didn't come back.")
                 break
 
             # Detect on the raw camera frame (what gets saved); only the preview is mirrored
@@ -174,7 +232,7 @@ def main():
                 message, message_color = f"Saved {letter}", GREEN
                 save_session(args.session, samples, meta)
 
-    cap.release()
+    camera.cap.release()
     cv2.destroyAllWindows()
     save_session(args.session, samples, meta)
     status = "complete" if not queue else f"{len(queue)} left, rerun the same command to continue"
