@@ -28,8 +28,8 @@ def main():
     for offset, values, name in [(-0.2, mlp, "MLP (landmarks)"), (0.2, cnn, "CNN (pixels)")]:
         bars = ax.bar(x + offset, values, 0.4, label=name)
         ax.bar_label(bars, labels=[f"{v:.0%}" for v in values], fontsize=8, padding=2)
-    ax.axhline(0.8, color="grey", linestyle="--", linewidth=1)
-    ax.text(len(groups) - 0.5, 0.81, "80% webcam target", ha="right", fontsize=8, color="grey")
+    # In the legend rather than as text on the plot, where the bars would cover it
+    ax.axhline(0.8, color="grey", linestyle="--", linewidth=1, label="80% webcam target")
     ax.axvline(0.5, color="black", linewidth=0.8)
     ax.set_xticks(x, groups)
     ax.set(ylim=(0, 1.08), ylabel="macro F1", title="Dataset test vs real webcam")

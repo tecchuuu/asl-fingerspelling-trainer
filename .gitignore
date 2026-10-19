@@ -42,3 +42,16 @@ desktop.ini
 web/node_modules/
 web/dist/
 web/public/mediapipe/
+
+# LaTeX build files (commit only report.tex and the final report.pdf)
+docs/report/*.aux
+docs/report/*.log
+docs/report/*.out
+docs/report/*.fls
+docs/report/*.fdb_latexmk
+docs/report/*.synctex.gz
+docs/report/*.toc
+docs/report/*.xdv
+# The built PDF and the file with my real name stay local (submission goes through the course form)
+docs/report/report.pdf
+docs/report/author.tex
