@@ -2,7 +2,7 @@
 
 Run from the project root:
     python -m scripts.plot_curves --notes "optimizer comparison" "first MLP" --out optimizer_comparison.png
-Runs are picked from results/runs.csv by a substring of their notes.
+Runs are picked from results/runs.csv by a substring of their notes, or by exact run_id.
 """
 
 import argparse
@@ -15,7 +15,7 @@ from src import config
 
 def load_runs(note_filters):
     with open(config.RUNS_CSV, newline="") as f:
-        return [r for r in csv.DictReader(f) if any(n in r["notes"] for n in note_filters)]
+        return [r for r in csv.DictReader(f) if any(n in r["notes"] or n == r["run_id"] for n in note_filters)]
 
 
 def load_history(run_id):
@@ -25,7 +25,7 @@ def load_history(run_id):
 
 def label(run):
     name = "Adam" if run["optimizer"] == "adam" else "SGD+momentum"
-    text = f"{name} lr={run['lr']} bs={run['batch_size']}"
+    text = f"{run['model'].upper()} {name} lr={run['lr']} bs={run['batch_size']}"
     if run["scheduler"] != "none":
         text += f" +{run['scheduler']}"
     if run["dropout"] != "0.3":

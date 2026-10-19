@@ -20,8 +20,8 @@ from sklearn.metrics import f1_score
 from torch import nn
 
 from src import config
-from src.dataset import landmark_splits, to_loader
-from src.models import MLP, count_params
+from src.dataset import crop_splits, landmark_splits, to_loader
+from src.models import CNN, MLP, count_params
 
 RUN_FIELDS = [
     "run_id", "model", "optimizer", "lr", "momentum", "batch_size", "dropout", "scheduler",
@@ -32,7 +32,7 @@ RUN_FIELDS = [
 
 def parse_args():
     p = argparse.ArgumentParser()
-    p.add_argument("--model", choices=["mlp"], default="mlp")
+    p.add_argument("--model", choices=["mlp", "cnn"], default="mlp")
     p.add_argument("--optimizer", choices=["adam", "sgd"], default="adam")
     p.add_argument("--lr", type=float, default=1e-3)
     p.add_argument("--momentum", type=float, default=0.9, help="SGD only")
@@ -46,6 +46,7 @@ def parse_args():
     p.add_argument("--no-mirror", action="store_true", help="no mirror augmentation")
     p.add_argument("--seed", type=int, default=config.SEED)
     p.add_argument("--notes", default="")
+    p.add_argument("--no-log", action="store_true", help="test run: don't write runs.csv, history or checkpoint")
     return p.parse_args()
 
 
@@ -96,11 +97,12 @@ def main():
     device = "cuda" if torch.cuda.is_available() else "cpu"
     run_id = f"{datetime.now():%Y%m%d-%H%M%S}_{args.model}_{args.optimizer}_bs{args.batch_size}"
 
-    splits = landmark_splits(args.split, include_enhanced=not args.no_enhanced, mirror_train=not args.no_mirror)
+    load_splits = landmark_splits if args.model == "mlp" else crop_splits
+    splits = load_splits(args.split, include_enhanced=not args.no_enhanced, mirror_train=not args.no_mirror)
     train_loader = to_loader(*splits["train"], batch_size=args.batch_size, shuffle=True)
     val_loader = to_loader(*splits["val"], batch_size=1024, shuffle=False)
 
-    model = MLP(dropout=args.dropout).to(device)
+    model = (MLP if args.model == "mlp" else CNN)(dropout=args.dropout).to(device)
     optimizer = make_optimizer(args, model.parameters())
     scheduler = (torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5, patience=2)
                  if args.scheduler == "plateau" else None)
@@ -123,17 +125,20 @@ def main():
         if scheduler:
             scheduler.step(val["loss"])
 
-        append_csv(config.HISTORY_DIR / f"{run_id}.csv", history_fields, {
-            "epoch": epoch, "lr": lr, "train_loss": f"{train['loss']:.4f}", "train_acc": f"{train['acc']:.4f}",
-            "val_loss": f"{val['loss']:.4f}", "val_acc": f"{val['acc']:.4f}", "val_f1": f"{val['f1']:.4f}",
-        })
+        if not args.no_log:
+            append_csv(config.HISTORY_DIR / f"{run_id}.csv", history_fields, {
+                "epoch": epoch, "lr": lr, "train_loss": f"{train['loss']:.4f}", "train_acc": f"{train['acc']:.4f}",
+                "val_loss": f"{val['loss']:.4f}", "val_acc": f"{val['acc']:.4f}", "val_f1": f"{val['f1']:.4f}",
+            })
         print(f"  epoch {epoch:2d}  train loss {train['loss']:.4f} acc {train['acc']:.3f}  |  "
-              f"val loss {val['loss']:.4f} acc {val['acc']:.3f} F1 {val['f1']:.3f}")
+              f"val loss {val['loss']:.4f} acc {val['acc']:.3f} F1 {val['f1']:.3f}  "
+              f"({time.perf_counter() - start:.0f} s total)")
 
         if val["loss"] < best["val_loss"]:
             best = {"epoch": epoch, "train_loss": train["loss"], "val_loss": val["loss"],
                     "val_acc": val["acc"], "val_f1": val["f1"]}
-            torch.save({"model_state": model.state_dict(), "args": vars(args), "epoch": epoch}, checkpoint_path)
+            if not args.no_log:
+                torch.save({"model_state": model.state_dict(), "args": vars(args), "epoch": epoch}, checkpoint_path)
             epochs_without_improvement = 0
         else:
             epochs_without_improvement += 1
@@ -141,6 +146,9 @@ def main():
                 print(f"  early stop: no val loss improvement for {args.patience} epochs")
                 break
     seconds = time.perf_counter() - start
+    if args.no_log:
+        print(f"Test run done in {seconds:.0f} s, nothing logged.")
+        return
 
     append_csv(config.RUNS_CSV, RUN_FIELDS, {
         "run_id": run_id, "model": args.model, "optimizer": args.optimizer, "lr": args.lr,

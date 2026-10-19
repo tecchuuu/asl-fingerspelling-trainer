@@ -21,5 +21,36 @@ class MLP(nn.Module):
         return self.net(x)
 
 
+class CNN(nn.Module):
+    """Model A (baseline): 64x64 RGB hand crop -> 24 letter scores.
+
+    Three conv blocks, each halving the image and doubling the channels:
+    3x64x64 -> 32x32x32 -> 64x16x16 -> 128x8x8, then average each channel to one number.
+    """
+
+    def __init__(self, channels=(32, 64, 128), dropout=0.3):
+        super().__init__()
+        layers = []
+        in_ch = 3
+        for out_ch in channels:
+            layers += [
+                nn.Conv2d(in_ch, out_ch, kernel_size=3, padding=1),
+                nn.BatchNorm2d(out_ch),
+                nn.ReLU(),
+                nn.MaxPool2d(2),
+            ]
+            in_ch = out_ch
+        self.features = nn.Sequential(*layers)
+        self.head = nn.Sequential(
+            nn.AdaptiveAvgPool2d(1),
+            nn.Flatten(),
+            nn.Dropout(dropout),
+            nn.Linear(in_ch, config.NUM_CLASSES),
+        )
+
+    def forward(self, x):
+        return self.head(self.features(x))
+
+
 def count_params(model):
     return sum(p.numel() for p in model.parameters())

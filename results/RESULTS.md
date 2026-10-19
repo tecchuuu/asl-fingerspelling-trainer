@@ -107,6 +107,40 @@ All three use early-stopping patience 8 (see below).
 
 ## 5. MLP vs CNN
 
+### CNN design (`src/models.py`)
+
+- Input: 64×64 RGB hand crop (same split as the MLP; mirrored crops added to train).
+- 3 conv blocks: Conv 3×3 → BatchNorm → ReLU → MaxPool 2×2. Each block halves the image and doubles the channels: 3×64×64 → 32×32×32 → 64×16×16 → 128×8×8.
+  - 3×3 kernels: small local patterns (edges → finger shapes → hand shape as blocks stack).
+  - BatchNorm: rescales each layer's outputs during training, so conv nets train stably with a normal learning rate.
+  - MaxPool: shrinks the image and keeps the strongest response, so later layers see larger areas.
+- Head: global average pool (each of 128 channels → 1 number) → dropout 0.3 → Linear → 24. Averaging instead of flattening keeps the parameter count small.
+- **96,792 parameters** vs the MLP's 52,376: same order of size, so the comparison is about the input (pixels vs landmarks), not model size.
+- Trained with the MLP's winning settings (Adam, lr 1e-3, batch 64, ReduceLROnPlateau, patience 8, max 50 epochs). No separate tuning grid for the baseline.
+- CPU cost: **~236 s per epoch** (vs ~3 s for the MLP), so up to ~3.3 h per run. First epoch: val F1 67.1% (MLP's first epoch: 88.9%).
+
+### First CNN run (validation)
+
+Run `20261018-232701_cnn_adam_bs64`. Figure: `figures/mlp_vs_cnn.png`.
+
+| | MLP (landmarks) | CNN (crops) |
+|---|---|---|
+| Val macro F1 | **96.81%** | 95.16% |
+| Val loss | **0.101** | 0.134 |
+| Train acc at best epoch | 99.0% | 99.7% |
+| Val acc at best epoch | 97.1% | 95.5% |
+| Train − val gap | **1.9 pts** | 4.2 pts |
+| Parameters | 52,376 | 96,792 |
+| Training time (CPU) | **157 s** | 9,154 s (2.5 h) |
+| Best epoch / run | 44 / 50 | 32 / 40 |
+
+- **The MLP wins on the dataset already**, by 1.7 F1 points, with half the parameters and ~58× less training time.
+- **The CNN overfits more:** it reaches 99.7% on train but 95.5% on val (gap 4.2 pts vs the MLP's 1.9). It can memorize pixel details of this one signer and room; the MLP never sees them.
+- **The CNN learns slower and noisier:** 67% F1 after epoch 1 (MLP 89%), val loss spikes until ~epoch 20 (e.g. epoch 19: 0.35). It must learn from pixels what MediaPipe gives the MLP directly.
+- LR halvings at epochs 10, 21, 25, 30, 36, 39; early stopping at 40.
+- **Expectation for the webcam test:** the gap should grow. The CNN's errors come from appearance (lighting, background, skin), which changes on a new camera; landmarks don't carry appearance at all.
+- Both numbers are validation scores on the same block split. Test scores come later from `evaluate.py`, once, on the final models.
+
 | Model | Dataset test F1 | Webcam test F1 | Size | ms / frame |
 |---|---|---|---|---|
 | A: CNN (hand crops) | | | | |
