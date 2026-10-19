@@ -99,7 +99,8 @@ def top_confusions(cm, n=8):
     off = cm.copy()
     np.fill_diagonal(off, 0)
     pairs = np.dstack(np.unravel_index(np.argsort(off, axis=None)[::-1][:n], off.shape))[0]
-    return [(config.LETTERS[i], config.LETTERS[j], int(off[i, j]), off[i, j] / cm[i].sum()) for i, j in pairs]
+    return [(config.LETTERS[i], config.LETTERS[j], int(off[i, j]), off[i, j] / cm[i].sum())
+            for i, j in pairs if off[i, j] > 0]
 
 
 def main():

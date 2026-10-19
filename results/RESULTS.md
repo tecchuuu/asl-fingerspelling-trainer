@@ -193,7 +193,7 @@ Final models chosen by **validation** F1, copied to `models/mlp_final.pt` and `m
   - **X: fine.** Hooked index finger in nearly all photos. (A first look at small, dark thumbnails wrongly suggested a straight index.)
   - Other 20 letters: consistent with standard ASL in the photos checked.
   - Decision: **in the main webcam sessions every letter is signed like the dataset reference sheet** (natural angle and position), so the test measures generalization to a new person/camera/lighting, not disagreement about handshapes. A separate `standard-asl` session will record the correct ASL version of the letters that differ (T, K, P, and any found later).
-  - Consequence for the product: a trainer built on this data would accept the dataset's T and reject a correct ASL T, i.e. teach a wrong sign. Fix for a real product: re-record or relabel T (and check P), or use a signer-verified dataset. Possible extra test: a few standard-ASL T and P captures to measure how often the models reject them.
+  - Consequence for the product: a trainer built on this data would accept the dataset's T and reject a correct ASL T, i.e. teach a wrong sign (confirmed by the standard-ASL check below; the app decision is logged there). Fix for a real product: re-record T, or use a signer-verified dataset. Possible extra test: a few standard-ASL T and P captures to measure how often the models reject them.
 - Each session has a name and notes (lighting, background, distance, hand) in `data/webcam_test/<session>.json`. Planned conditions: daylight / night lamp, plain / busy background, near / far, right / left hand, different days.
 
 ### Webcam test: first 2 sessions (`src/evaluate_webcam.py`, overall scores only)
@@ -215,6 +215,59 @@ Scored after `room-right` and `screen-right`, before the left-hand sessions. Onl
   - Dropped, kept as future work: retraining the CNN with brightness/colour/background augmentation, a pretrained (ImageNet) backbone, extra CNN optimizer runs, a live side-by-side CNN demo.
   - In hindsight the CNN was optional scope: it tested whether the landmark approach was the right bet, which wasn't known when planning. It cost one script and one overnight run.
 - Caveats: 72 samples per session, so ±a few points of noise; one signer. `screen-right` was partly captured rapid-fire (hand held, small adjustments) — to be checked when all sessions are in.
+
+### Webcam test: final results (3 sessions + standard-ASL check)
+
+All sessions recorded before any per-letter result was looked at. `screen-left` and the distance sessions were not recorded (dark lighting tested with the right hand only; distance not tested). Figure: `figures/webcam_vs_dataset.png`.
+
+| Session | n | MLP F1 | CNN F1 | MLP acc | CNN acc |
+|---|---|---|---|---|---|
+| room-right (room light, right hand) | 72 | **98.6%** | 17.4% | 98.6% | 25.0% |
+| room-left (room light, left hand) | 72 | **91.3%** | 18.1% | 93.1% | 27.8% |
+| screen-right (dark, monitor light) | 72 | **87.0%** | 0.8% | 88.9% | 4.2% |
+| **All webcam** | 216 | **93.1%** | 16.0% | 93.5% | 19.0% |
+| *Dataset test (for comparison)* | 8,583 | *98.1%* | *96.0%* | | |
+
+- **MLP meets the 80% webcam target in every session** (93.1% overall).
+- **Hand effect:** left hand −7 points vs right (91.3 vs 98.6). Mirror augmentation mostly works; the remaining gap is likely the non-dominant hand signing less precisely, not mirroring itself (can't separate the two with one signer).
+- **Lighting effect:** dark −12 points (87.0 vs 98.6). Usable, but the app should advise front lighting.
+- **CNN:** 16% overall, chance level in the dark. Dataset test 96% → webcam 16%: the central finding (section 5).
+
+**MLP webcam errors (all sessions, 9 samples per letter):**
+
+| Letter | F1 | Main confusion |
+|---|---|---|
+| Q | 50% | Q → P, 6 of 9 |
+| P | 75% | (receives the Q errors) |
+| Y | 80% | Y → V, 3 of 9 |
+| S | 80% | S → E, 3 of 9 |
+| E, V | 86% | |
+
+- **Q ↔ P is the main real-world weakness**, not M/N (the dataset's weakest pair). Both letters point down; with the camera mounted high and looking down, downward-pointing hands are seen from an angle the dataset (camera roughly level) doesn't have. On the dataset test Q → P was already the 2nd most common MLP confusion (3.2%); the webcam angle amplifies it.
+- S → E: both are fists, differing in thumb position (across the fingers vs tucked under), which landmarks capture poorly in a fist.
+- 9 samples per letter, so per-letter numbers are rough (one error = 11 points).
+
+**Within-letter variation check** (median distance between the 3 captures of a letter, normalized features): room-right 0.54, room-left 0.63, screen-right 0.70. No letter in any session has near-duplicate captures (all > 0.15). So the partly rapid-fire `screen-right` session didn't produce near-duplicates; its spread is actually the largest (darker images → noisier landmarks).
+
+**Standard-ASL check** (`standard-asl`: T, K, P signed per ASL dictionaries, 5 each, room light, right hand; not in the main score):
+
+| Letter | MLP accepts | CNN accepts | MLP predicts instead |
+|---|---|---|---|
+| T | **0%** | 0% | A |
+| K | 80% | 0% | W (1 of 5) |
+| P | 100% | 0% | – |
+
+- **T is a real problem:** the MLP never accepts the correct ASL T and reads it as A (both are fists with the thumb close to the index finger). A trainer built on this data would reject every correctly signed T.
+  - Options considered: (a) exclude T from the app like J and Z; (b) keep T in the prototype, accepting the dataset's handshape, with a visible label.
+  - **Decision: (b).** The app is a proof of concept, not deployed to learners. T stays, shown with a ⚠️ note: "Dataset version, not standard ASL. A real deployment needs T re-recorded with the correct handshape." This makes the data limitation visible instead of hiding it.
+  - Before any real deployment: re-record T with the correct ASL handshape (ideally several signers) and retrain.
+  - Fix options, ranked:
+    1. **Stretch goal (only after the app works):** replace the T class with correct-T images from another Kaggle dataset (check its T by eye against an ASL dictionary first), run `extract.py` on them, retrain the MLP (~2.5 min), re-evaluate. The 5 standard-ASL T captures then become the before/after test (0/5 now). The CNN stays frozen.
+    2. **Future work only:** add whole other datasets (all letters, more signers) for better real-world generalization.
+    3. **Rejected:** replacing the entire dataset. It would redo extraction, tuning, the CNN and every evaluation, for a flaw limited to one letter, with no guarantee the new dataset is cleaner.
+  - Live demo words avoid T (the roadmap's KITTI needs replacing) so the demo doesn't depend on the non-standard letter.
+- **K and P variants don't matter in practice:** the MLP accepts the standard versions (80% / 100%), so the dataset's slightly different K and P still generalize to the standard signs. Not a reason to exclude them.
+- n = 5 per letter: rough, but 0/5 vs 5/5 is a clear signal.
 
 ## 6. Live app
 
