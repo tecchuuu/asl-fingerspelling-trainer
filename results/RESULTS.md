@@ -364,6 +364,18 @@ FastAPI server for the web app: `POST /predict` takes the 21 MediaPipe landmarks
   - Even the largest gaps never changed the letter. **No mirroring or coordinate mismatch between browser and Python**, so the browser can feed the same model and normalization as the Python pipeline.
 - The camera first failed with "Could not start video source"; it worked after a retry. `<Camera>` now falls back to default camera settings if the preferred 640×480 @ 30 fps request is refused.
 
+### Spell mode (Phase 4, first practice mode)
+
+Design choice: a **goal to follow, not a race**. No timer, no speed score: the app shows a word, the learner spells it letter by letter. (Considered a Monkeytype-style speed game; rejected because the point is learning correct handshapes, and fingerspelling through the gate is inherently ~0.6 s per letter.)
+
+- Current letter highlighted, with its **reference photo**; correct sign → green, moves on; wrong sign → "Looks like X, try again", stays on the letter (a learner can't skip a shape they got wrong). Finished word → "Done! 🎉", next word after 1.2 s.
+- **Words / Letters** setting: "Letters" serves single random letters, so the plain drill is the same page.
+- Double letters: when the next letter repeats, the panel says "Same letter again: slide your hand sideways a little" (the gate's double-letter rule).
+- **Word list** (`web/src/lib/words.js`, 50 words): no T (non-standard in the dataset), J, Z (motion letters), and no word mixing P and Q (the webcam's most confused pair); checked in code. 13 words contain double letters (HELLO, BOOK, COFFEE, ...). T still appears in Letters mode, with the ⚠️ note from the T decision.
+- **Reference photos** (`web/public/letters/`, 24 × 240 px, 207 KB): one training photo per letter, chosen automatically as the most typical hand shape (closest to the letter's median normalized landmarks) among that letter's best-lit third (brightness of the hand region, not the background; a first version picked a dark, backlit V). Cropped around the hand and flipped horizontally to match the mirrored camera view.
+- **Gate in the browser** (`web/src/lib/gate.js`): JavaScript port of `src/gate.py`, same settings; `web/scripts/check-gate.mjs` runs the same 14 cases as the Python check, all pass.
+- Verified in a browser (without camera): layout, word display, reference photo loading, Words/Letters toggle, Skip, T warning. **Not yet verified: signing with the live camera.**
+
 ### Live demo notes
 
 - Gate settings: default (10 frames, 0.8) felt fine in the first live try; note that the 10-frame hold is fps-dependent (~0.6 s at 16 FPS, ~0.33 s at 30 FPS).
