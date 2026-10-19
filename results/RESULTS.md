@@ -358,7 +358,11 @@ FastAPI server for the web app: `POST /predict` takes the 21 MediaPipe landmarks
 
 - Check page: live prediction from the browser's landmarks, and a "Compare with Python" button that sends the same frame as a JPEG to `/api/debug/compare`, where Python runs its own MediaPipe on it and returns both predictions plus the landmark difference.
 - Endpoint verified with simulated browser frames (dataset photos placed in a 640×480 frame): same letter, landmarks **0.3–0.5 px apart** (just JPEG compression). That's the baseline for the real browser test.
-- Real browser test: <!-- to fill in: ~5 letters signed, same letter X/5, mean xy diff ~? px -->
+- **Real browser test (Chrome, my webcam): 26/26 same letter**, covering all 24 letters (`browser_vs_python.csv`, transcribed from the check page).
+  - Landmark difference: **median 3.0 px** (0.46% of the 640 px width), mean 4.0 px, max 12.7 px.
+  - Largest gaps (> 5 px): Q 12.7, P 10.8, H 8.5, Y 6.1, N 5.8, A 5.5. P and Q point down and H points sideways, where fingers hide each other most. Likely cause: the browser runs MediaPipe in VIDEO mode (tracks the hand from the previous frame) while the Python check runs IMAGE mode (fresh detection on one frame), and hidden joints are where the two guesses can differ.
+  - Even the largest gaps never changed the letter. **No mirroring or coordinate mismatch between browser and Python**, so the browser can feed the same model and normalization as the Python pipeline.
+- The camera first failed with "Could not start video source"; it worked after a retry. `<Camera>` now falls back to default camera settings if the preferred 640×480 @ 30 fps request is refused.
 
 ### Live demo notes
 

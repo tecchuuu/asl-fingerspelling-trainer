@@ -22,12 +22,9 @@ export default function Camera({ onFrame }) {
 
     async function start() {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: 640, height: 480, frameRate: { ideal: 30 } },
-          audio: false,
-        });
+        stream = await openCamera();
       } catch (err) {
-        setStatus(`Camera unavailable: ${err.message}`);
+        setStatus(`Camera unavailable: ${err.message}. Close other apps or tabs using the camera, then reload.`);
         return;
       }
       const video = videoRef.current;
@@ -67,6 +64,19 @@ export default function Camera({ onFrame }) {
       {status && <div className="camera-status">{status}</div>}
     </div>
   );
+}
+
+async function openCamera() {
+  try {
+    return await navigator.mediaDevices.getUserMedia({
+      video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
+      audio: false,
+    });
+  } catch (err) {
+    // Some webcams refuse specific settings ("Could not start video source"); retry with defaults
+    console.warn("Camera with preferred settings failed, retrying with defaults:", err);
+    return navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+  }
 }
 
 function draw(canvas, video, landmarks) {

@@ -10,6 +10,8 @@ waits ~2 s before falling back, which made every request take 2 s instead of 2 m
 """
 
 import base64
+import csv
+from datetime import datetime
 
 import cv2
 import mediapipe as mp
@@ -26,6 +28,7 @@ from src.predict import letter_probs
 
 MODEL_NAME = "mlp_other"
 WEB_DIST = config.ROOT / "web" / "dist"
+COMPARE_CSV = config.RESULTS_DIR / "browser_vs_python.csv"
 
 app = FastAPI(title="ASL fingerspelling trainer")
 model = load_final(MODEL_NAME)
@@ -94,13 +97,29 @@ def compare(req: CompareRequest):
     js = np.asarray(req.landmarks, dtype=np.float32)
     h, w = rgb.shape[:2]
     pixel_diff = np.abs((py[:, :2] - js[:, :2]) * [w, h]).mean()
-    return {
+    out = {
         "python_found_hand": True,
         "mean_xy_diff_px": float(pixel_diff),
         "max_z_diff": float(np.abs(py[:, 2] - js[:, 2]).max()),
         "browser": predict_raw(js, req.width, req.height),
         "python": predict_raw(py, w, h),
     }
+    _log_comparison(out)
+    return out
+
+
+def _log_comparison(r):
+    new = not COMPARE_CSV.exists()
+    with open(COMPARE_CSV, "a", newline="") as f:
+        writer = csv.writer(f)
+        if new:
+            writer.writerow(["time", "browser_letter", "browser_conf", "python_letter", "python_conf",
+                             "same_letter", "mean_xy_diff_px", "max_z_diff"])
+        writer.writerow([datetime.now().isoformat(timespec="seconds"),
+                         r["browser"].letter, f"{r['browser'].confidence:.3f}",
+                         r["python"].letter, f"{r['python'].confidence:.3f}",
+                         r["browser"].letter == r["python"].letter,
+                         f"{r['mean_xy_diff_px']:.2f}", f"{r['max_z_diff']:.4f}"])
 
 
 # The built React app (web/dist) is served last, so /api routes win
