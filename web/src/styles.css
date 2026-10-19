@@ -220,3 +220,6 @@ ul.plain { list-style: none; padding: 0; margin: 0; line-height: 1.9; }
 @keyframes blink { 50% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .caret { animation: none; } }
 .nav { flex-wrap: wrap; }
+
+.camera-status { padding: 16px; text-align: center; }
+.camera-status p { margin: 0 0 12px; }

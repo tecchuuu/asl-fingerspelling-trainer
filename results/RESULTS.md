@@ -454,6 +454,11 @@ Page: simulated banner with an expandable method, stat tiles, "where the class g
 - **Free spelling**: no target, whatever is signed is typed. **Automatic space**: when the hand is gone or resting ("other") for 1.2 s after a letter, a space is added, matching how ASL marks word breaks with a pause. Delete / Clear / Copy buttons; blinking caret respects reduced-motion. Not logged (no right answer to score).
 - Verified in a browser: Learn grid (24 photos loaded), letter detail, Try it → single-letter practice → back to Learn, Free page with its buttons disabled until there's text. **Not verified: the auto-space timing with a live camera.**
 
+### Page URLs (refresh, Back/Forward)
+
+- The current page was only React state, so F5 returned to home and Back didn't move between pages. Now it lives in the URL hash (`web/src/lib/route.js`): `#/`, `#/learn`, `#/letter/M`, `#/practice/food`, `#/exam/animals`, `#/free`, `#/progress`, `#/trainer`. A hash needs no server changes (FastAPI and Vite only serve `index.html`); unknown or stale links (bad category, J, typos) fall back to home.
+- Checked: every page round-trips through its URL; in a browser, F5 on Food Practice stays there, Back/Forward step through pages, typing a URL opens that page.
+
 ### Live demo notes
 
 - Gate settings: default (10 frames, 0.8) felt fine in the first live try; note that the 10-frame hold is fps-dependent (~0.6 s at 16 FPS, ~0.33 s at 30 FPS).
@@ -464,5 +469,6 @@ Page: simulated banner with an expandable method, stat tiles, "where the class g
 
 - **Webcam stopped sending frames on Windows.** OpenCV's default backend (MSMF) dropped the stream after a few seconds. Fixed by opening the camera with DirectShow (`cv2.CAP_DSHOW`).
 - **Webcam freezes during long recording sessions.** In `record_test.py` the preview froze after a few minutes, then eventually "Camera stopped sending frames". Cause: the camera kept returning the same stale frame, which looks like a normal successful read. Fixes in `CameraReader`: retry failed reads for ~1.5 s; treat ~1.5 s of byte-identical frames as frozen (a live sensor always adds noise) and reconnect the camera automatically; request MJPG at 640×480 to reduce USB bandwidth. Tested with a fake camera that freezes; not yet confirmed on the real webcam.
+- **"Could not start video source" in the browser app** (demo build, first visit to `127.0.0.1:8000`). Chrome's permission prompt shows a live camera preview; when Allow is clicked the page requests the camera at once, and this webcam refuses a second open while the preview still holds it (`NotReadableError`). Nothing else was holding the camera. Fix in `Camera.jsx`: retry with backoff (preferred 640×480 settings, then defaults after 0.7 s, 1.5 s, 3 s), stop early only on a denied permission, show the error name, and a **Retry camera** button instead of reloading. Workaround before the fix: reload once after allowing (no prompt the second time). Denied-permission path verified in a browser; on the real webcam, a reload after allowing worked (permission remembered, no prompt), confirming the cause. **Demo checklist:** run `demo.bat`, open `http://127.0.0.1:8000` and allow the camera once before presenting, on the same laptop and browser.
 
 ## 8. Report lines

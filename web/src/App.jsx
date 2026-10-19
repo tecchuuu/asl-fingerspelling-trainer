@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useRoute } from "./lib/route.js";
 import { applyTheme, currentTheme } from "./lib/theme.js";
 import CheckPage from "./pages/CheckPage.jsx";
 import ExamPage from "./pages/ExamPage.jsx";
@@ -12,7 +13,7 @@ import TrainerPage from "./pages/TrainerPage.jsx";
 // view: { page: "home" | "learn" | "free" | "progress" | "trainer" | "check" } | { page: "practice" | "exam", categoryId }
 //       | { page: "practice", letter } (one letter, from Learn)
 export default function App() {
-  const [view, setView] = useState({ page: "home" });
+  const [view, setView] = useRoute(); // kept in the URL hash, see lib/route.js
   const home = () => setView({ page: "home" });
   const [theme, setTheme] = useState(currentTheme);
   const toggleTheme = () => {

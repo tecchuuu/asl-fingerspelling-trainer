@@ -12,6 +12,8 @@ export default function Camera({ onFrame }) {
   const canvasRef = useRef(null);
   const onFrameRef = useRef(onFrame);
   const [status, setStatus] = useState("Starting camera...");
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0); // bumped by the Retry button to restart the effect
   onFrameRef.current = onFrame;
 
   useEffect(() => {
@@ -21,10 +23,20 @@ export default function Camera({ onFrame }) {
     let lastTime = -1;
 
     async function start() {
+      setFailed(false);
+      setStatus("Starting camera...");
       try {
-        stream = await openCamera();
+        stream = await openCamera(setStatus);
       } catch (err) {
-        setStatus(`Camera unavailable: ${err.message}. Close other apps or tabs using the camera, then reload.`);
+        if (stopped) return;
+        setStatus(err.name === "NotAllowedError"
+          ? "Camera permission was denied. Allow it in the address bar (camera icon), then retry."
+          : `Camera unavailable (${err.name}: ${err.message}). Close other apps or tabs using the camera, then retry.`);
+        setFailed(true);
+        return;
+      }
+      if (stopped) {
+        stream.getTracks().forEach((t) => t.stop());
         return;
       }
       const video = videoRef.current;
@@ -55,28 +67,52 @@ export default function Camera({ onFrame }) {
       cancelAnimationFrame(rafId);
       stream?.getTracks().forEach((t) => t.stop());
     };
-  }, []);
+  }, [attempt]);
 
   return (
     <div className="camera">
       <video ref={videoRef} playsInline muted />
       <canvas ref={canvasRef} />
-      {status && <div className="camera-status">{status}</div>}
+      {status && (
+        <div className="camera-status">
+          <div>
+            <p>{status}</p>
+            {failed && <button onClick={() => setAttempt((a) => a + 1)}>Retry camera</button>}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-async function openCamera() {
-  try {
-    return await navigator.mediaDevices.getUserMedia({
-      video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
-      audio: false,
-    });
-  } catch (err) {
-    // Some webcams refuse specific settings ("Could not start video source"); retry with defaults
-    console.warn("Camera with preferred settings failed, retrying with defaults:", err);
-    return navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Right after the permission prompt, Chrome's own camera preview can still hold the webcam,
+// and some Windows webcams refuse a second open ("Could not start video source", NotReadableError).
+// So: preferred settings first, then defaults, waiting a little longer before each retry.
+const ATTEMPTS = [
+  { delay: 0, video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } } },
+  { delay: 700, video: true },
+  { delay: 1500, video: true },
+  { delay: 3000, video: true },
+];
+
+async function openCamera(onStatus) {
+  let lastError;
+  for (const [i, { delay, video }] of ATTEMPTS.entries()) {
+    if (delay) {
+      onStatus(`Camera busy, retrying (${i}/${ATTEMPTS.length - 1})...`);
+      await sleep(delay);
+    }
+    try {
+      return await navigator.mediaDevices.getUserMedia({ video, audio: false });
+    } catch (err) {
+      if (err.name === "NotAllowedError") throw err; // denied: retrying won't help
+      console.warn(`Camera attempt ${i + 1} failed:`, err);
+      lastError = err;
+    }
   }
+  throw lastError;
 }
 
 function draw(canvas, video, landmarks) {
