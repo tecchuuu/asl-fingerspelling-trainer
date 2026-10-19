@@ -326,6 +326,22 @@ Webcam → MediaPipe → `normalize` → MLP → gate → typed text, with per-f
   - The live view ran at ~16 FPS: that's the webcam's frame rate (a new frame every ~62 ms; the pipeline finishes in ~11 ms and waits).
   - Raw camera test (no MediaPipe, no model), same room light: DirectShow delivers **~12–13 fps** (ignores MJPG and 30 fps requests); Media Foundation reports **29 fps** with no failed reads over 20 s, but **261 of 582 frames were exact duplicates** of the previous one, i.e. **~16 new images per second** padded to 30. So the camera itself produces ~15–16 frames/s in this light; webcams lengthen exposure in dim light. Kept DirectShow (stable, small difference). Brighter light is the fix, and also helps accuracy (room light 98.6% vs dark 87%).
   - MediaPipe is ~98% of the per-frame cost; the MLP is 0.25 ms. So the CNN's 1.4 ms (section 5) wouldn't have been a speed problem either: the landmark approach wins on accuracy, not speed.
+### API skeleton (`app/main.py`, check in `scripts/check_api.py`)
+
+FastAPI server for the web app: `POST /predict` takes the 21 MediaPipe landmarks + video width/height and returns the letter (or "other"), its confidence and the top 3; `GET /health`. Uses `mlp_other_final.pt` + pinch guard through the same `letter_probs` as the live demo. Stateless: the gate will run per user in the app (decided in Phase 4).
+
+- Correctness: 72/72 `room-right` samples give the same answer through the API as calling the model directly (70/72 correct). A malformed request (5 points instead of 21) is rejected with HTTP 422.
+- Speed: ~5 ms per request in-process (validation + JSON + model); **2.4 ms round trip over real HTTP** on `127.0.0.1`.
+- **Gotcha:** the same request through `localhost` took **~2,040 ms**: on this Windows machine `localhost` tries IPv6 first and waits ~2 s before falling back to IPv4. Always use `http://127.0.0.1:8000`.
+
+### Frontend decision: React (changed from the proposal's plain HTML/JS)
+
+- Why: the app has real UI state across pages (target letter, gate progress, word progress, pass/fail, attempt history, dashboard charts), which React handles cleanly, and I already know React. A shared `<Camera>` component (webcam + MediaPipe JS + calls to `/predict`) can be reused by all three modes.
+- Cost accepted: Node + `npm` + a build step; two processes while developing (Vite dev server proxying `/predict` to FastAPI on 127.0.0.1:8000). For the demo, `npm run build` once and FastAPI serves the built files, so it's still one command.
+- Plan: `web/` = Vite + React, MediaPipe via `@mediapipe/tasks-vision`. `node_modules/` and the build output stay out of git.
+
+### Live demo notes
+
 - Gate settings: default (10 frames, 0.8) felt fine in the first live try; note that the 10-frame hold is fps-dependent (~0.6 s at 16 FPS, ~0.33 s at 30 FPS).
 - Double-letter rule (tested live):
 - Word spaces: ASL marks word breaks with a pause, not a sign. Not needed for the drill and spell-the-word modes; an automatic space after ~1 s without a letter would cover free-spell mode.

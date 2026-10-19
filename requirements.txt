@@ -12,3 +12,7 @@ numpy>=2.5
 scikit-learn>=1.9
 matplotlib>=3.11
 jupyter
+
+# Web app
+fastapi>=0.146
+uvicorn>=0.54
