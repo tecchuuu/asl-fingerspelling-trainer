@@ -3,8 +3,9 @@ import CheckPage from "./pages/CheckPage.jsx";
 import ExamPage from "./pages/ExamPage.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import PracticePage from "./pages/PracticePage.jsx";
+import ProgressPage from "./pages/ProgressPage.jsx";
 
-// view: { page: "home" } | { page: "practice" | "exam", categoryId } | { page: "check" }
+// view: { page: "home" | "progress" | "check" } | { page: "practice" | "exam", categoryId }
 export default function App() {
   const [view, setView] = useState({ page: "home" });
   const home = () => setView({ page: "home" });
@@ -15,6 +16,9 @@ export default function App() {
         <button className="brand" onClick={home}>✋ Fingerspelling Trainer</button>
         <button className={["home", "practice", "exam"].includes(view.page) ? "on" : ""} onClick={home}>
           Categories
+        </button>
+        <button className={view.page === "progress" ? "on" : ""} onClick={() => setView({ page: "progress" })}>
+          My progress
         </button>
         <button className={`dev ${view.page === "check" ? "on" : ""}`} onClick={() => setView({ page: "check" })}>
           Browser check
@@ -27,6 +31,7 @@ export default function App() {
         <ExamPage key={view.categoryId} categoryId={view.categoryId} onBack={home}
           onPractice={() => setView({ page: "practice", categoryId: view.categoryId })} />
       )}
+      {view.page === "progress" && <ProgressPage onStart={(categoryId, mode) => setView({ page: mode, categoryId })} />}
       {view.page === "check" && <CheckPage />}
     </>
   );

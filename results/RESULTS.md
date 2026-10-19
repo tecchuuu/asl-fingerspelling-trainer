@@ -412,6 +412,16 @@ API: `POST /api/sessions`, `POST /api/sessions/{id}/finish`, `POST /api/attempts
 - Practice and Exam share `WordDisplay` and `LiveCamera` components.
 - Verified in a browser by running a full Colors exam answering "I don't know" to all 24 letters: intro → 5 words with no photo → results 0%, all letters failed, letters-to-practise list, exam saved on the server, card shows "best exam 0%". The test exam was then deleted from `data/attempts.db`. Not verified: an exam signed with the live camera.
 
+### Learner dashboard: "My progress" (hub step 4)
+
+- Stat tiles: letters signed, % signed correctly, exams taken, best exam.
+- **Accuracy by letter**: a 24-tile grid (A–Y), each tile printing its accuracy, coloured in 5 bands (< 50%, 50–70, 70–85, 85–95, 95%+); untried letters are outlined. Hover shows attempts, accuracy and average time when right; a Grid/Table toggle shows the same numbers as a table.
+  - Colour choice: accuracy is a magnitude, so **one hue (blue) stepped dim → bright**, not red → green (red/green are status colours and the hardest pair for colour-blind viewers). Checked with a palette validator against the app's dark panel: single hue, monotone lightness, visible step gaps. The first ramp failed (darkest step 1.8:1 against the background, below the 2:1 floor), so it was shifted one step lighter (2.2:1). Colour is never the only cue: every tile prints its percentage.
+- **Letters to work on**: lowest accuracy below 85%, only letters with ≥ 3 tries (one or two tries is too little to call a letter weak). **Most often mixed up**: "Aiming for M, the model saw N ×3".
+- **Exam history**: date, category, score.
+- Empty state links to Alphabet practice.
+- Verified in a browser with temporary sample data (227 attempts, 4 sessions; removed afterwards): tiles coloured by the right band, untried letter outlined, legend, hover tooltip, table view, focus list, mix-ups, exam history, no horizontal overflow. Not checked by eye (screenshots unavailable at the time).
+
 ### Live demo notes
 
 - Gate settings: default (10 frames, 0.8) felt fine in the first live try; note that the 10-frame hold is fps-dependent (~0.6 s at 16 FPS, ~0.33 s at 30 FPS).
