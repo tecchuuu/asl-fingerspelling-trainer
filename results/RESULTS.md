@@ -394,6 +394,14 @@ API: `POST /api/sessions`, `POST /api/sessions/{id}/finish`, `POST /api/attempts
 - Checks (throwaway database, real one untouched): 9/9 pass, covering practice and exam sessions, first-try exam scoring (MILK with one miss → 0.75), per-letter accuracy and timing, confusions, category stats, exam history, invalid input rejected.
 - The spell page starts a practice session per mode (words / alphabet) and logs every typed letter fire-and-forget (a failed log write never interrupts practice). Verified in a browser: sessions are created on load and on mode switch.
 
+### Categories + home page (hub step 2)
+
+- 7 categories (`web/src/lib/words.js`), 133 items: **Alphabet** (24 letters, includes T with ⚠️), **Everyday** 21, **Food** 21, **Animals** 21, **Colors** 12, **Nature** 16, **Double letters** 18 (every word has a repeated letter, to practise the sideways slide).
+- `web/scripts/check-words.mjs` validates every list: only supported letters (no J/Z), no T outside Alphabet, no word mixing P and Q, no duplicates, and every "Double letters" word really has a double. All pass.
+- Home page: one card per category with its progress from the attempt log (words completed / total, best exam) and Practice / Exam buttons (Exam arrives in step 3).
+- The spell page became **Practice** for a chosen category: same behaviour, the logged session carries the category id. Words/Letters toggle removed (Alphabet is now its own category).
+- Verified in a browser: home renders all 7 cards, Food → Practice shows a Food word with the right photo, back returns home, no console errors. Not verified: signing with the live camera.
+
 ### Live demo notes
 
 - Gate settings: default (10 frames, 0.8) felt fine in the first live try; note that the 10-frame hold is fps-dependent (~0.6 s at 16 FPS, ~0.33 s at 30 FPS).

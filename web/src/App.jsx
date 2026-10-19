@@ -1,27 +1,28 @@
 import { useState } from "react";
 import CheckPage from "./pages/CheckPage.jsx";
-import SpellPage from "./pages/SpellPage.jsx";
+import HomePage from "./pages/HomePage.jsx";
+import PracticePage from "./pages/PracticePage.jsx";
 
-const PAGES = {
-  spell: { label: "Spell", component: SpellPage },
-  check: { label: "Browser check", component: CheckPage, dev: true },
-};
-
+// view: { page: "home" } | { page: "practice", categoryId } | { page: "check" }
 export default function App() {
-  const [page, setPage] = useState("spell");
-  const Page = PAGES[page].component;
+  const [view, setView] = useState({ page: "home" });
+  const home = () => setView({ page: "home" });
+
   return (
     <>
       <nav className="nav">
-        <span className="brand">✋ Fingerspelling Trainer</span>
-        {Object.entries(PAGES).map(([key, p]) => (
-          <button key={key} className={`${page === key ? "on" : ""} ${p.dev ? "dev" : ""}`} onClick={() => setPage(key)}>
-            {p.label}
-          </button>
-        ))}
+        <button className="brand" onClick={home}>✋ Fingerspelling Trainer</button>
+        <button className={view.page === "home" || view.page === "practice" ? "on" : ""} onClick={home}>
+          Categories
+        </button>
+        <button className={`dev ${view.page === "check" ? "on" : ""}`} onClick={() => setView({ page: "check" })}>
+          Browser check
+        </button>
       </nav>
-      {/* key: switching pages unmounts the old one, which releases the camera */}
-      <Page key={page} />
+      {/* key: changing view unmounts the old page, which releases the camera */}
+      {view.page === "home" && <HomePage onStart={(categoryId) => setView({ page: "practice", categoryId })} />}
+      {view.page === "practice" && <PracticePage key={view.categoryId} categoryId={view.categoryId} onBack={home} />}
+      {view.page === "check" && <CheckPage />}
     </>
   );
 }
