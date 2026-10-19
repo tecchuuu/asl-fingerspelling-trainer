@@ -9,6 +9,8 @@ results/checkpoints/
 *.pt
 *.pth
 *.ckpt
+# Except the two final models (~600 KB): the app needs them without retraining
+!models/*_final.pt
 
 # SQLite attempt log from the app
 *.db

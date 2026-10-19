@@ -141,10 +141,31 @@ Run `20261018-232701_cnn_adam_bs64`. Figure: `figures/mlp_vs_cnn.png`.
 - **Expectation for the webcam test:** the gap should grow. The CNN's errors come from appearance (lighting, background, skin), which changes on a new camera; landmarks don't carry appearance at all.
 - Both numbers are validation scores on the same block split. Test scores come later from `evaluate.py`, once, on the final models.
 
-| Model | Dataset test F1 | Webcam test F1 | Size | ms / frame |
-|---|---|---|---|---|
-| A: CNN (hand crops) | | | | |
-| B: MLP (landmarks) | | | | |
+### Test set (`src/evaluate.py`, run once on the final models)
+
+Final models chosen by **validation** F1, copied to `models/mlp_final.pt` and `models/cnn_final.pt`. Test set: 8,583 samples, same block split, same samples for both models (asserted). Numbers in `test_summary.csv` and `test_per_letter.csv`.
+
+| Model | Dataset test F1 | Test acc | Webcam test F1 | Params | File | ms / sample (model only) |
+|---|---|---|---|---|---|---|
+| A: CNN (hand crops) | 96.02% | 96.17% | | 96,792 | 388 KB | 1.43 |
+| B: MLP (landmarks) | **98.14%** | **98.33%** | | **52,376** | **208 KB** | **0.07** |
+
+- **Both beat the 90% dataset target.** The MLP wins by 2.1 F1 points.
+- **Test is higher than val for both** (MLP 98.1 vs 96.8, CNN 96.0 vs 95.2): the test blocks happen to be a bit easier than the val blocks. One block split = some luck in which recording blocks land where. It moves both models the same way, so the comparison holds; the absolute numbers carry roughly ±1–2 points of split luck.
+- **Speed:** MLP 0.07 ms vs CNN 1.43 ms per sample (~20× faster), batch 1 on CPU, model only. Both are tiny next to MediaPipe's ~20 ms per frame, which dominates the live pipeline either way. The CNN also needs a crop step the MLP doesn't.
+
+**Where each model fails** (figures: `figures/confusion_matrices.png`, `figures/per_letter_f1.png`):
+
+| | MLP | CNN |
+|---|---|---|
+| Hardest letters (F1) | M 91.8%, N 93.8%, S 97.6% | H 87.0%, A 87.4%, G 89.9% |
+| Top confusion | N → M (5.9% of N) | H → G (18.6% of H) |
+| Others | Q → P 3.2%, S → I 2.5%, M → N 2.8% | A → L 9.2%, V → W 6.6%, I → R 5.9% |
+
+- **The models fail on different letters.**
+- **MLP: M and N**, the predicted closed-fist letters. M and N differ only in how many fingers fold over the tucked thumb (3 vs 2). In a fist, those fingertips overlap and MediaPipe has to guess hidden joints, so the landmarks of M and N come out similar. That's the same reason M/N had the most MediaPipe detection failures (33% / 40%).
+- **CNN: H ↔ G.** Both point sideways; G extends the index finger, H the index + middle finger stacked on top of it. In a 64×64 crop the two stacked fingers look like one thick finger. Landmarks place each fingertip separately, so the MLP barely confuses them (H → G 1.7%).
+- **The CNN is better on M and N** (94.0% / 94.8% vs the MLP's 91.8% / 93.8%): pixels still show the knuckle bumps that the landmarks lose. The two inputs carry complementary information. Future work: combine them (e.g. CNN only for M/N/S/T).
 
 ## 6. Live app
 
