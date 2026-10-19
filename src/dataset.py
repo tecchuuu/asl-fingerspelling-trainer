@@ -15,6 +15,9 @@ TEST_FRACTION = 0.15
 # Frames are numbered in recording order and neighbours are near-duplicates,
 # so whole blocks of consecutive frames go to the same split.
 BLOCK_SIZE = 100
+# "other" class: whole sessions held out for testing, and the size of capture blocks for train/val
+OTHER_TEST_SESSIONS = ("other-test",)
+OTHER_BLOCK = 50
 
 
 def load_letters(with_crops=False):
@@ -58,11 +61,41 @@ def split_indices(labels, frames, mode="block", seed=config.SEED):
     return {k: np.concatenate(v) for k, v in splits.items()}
 
 
-def landmark_splits(mode="block", include_enhanced=True, mirror_train=True):
+def load_other(sessions):
+    """Normalized features of recorded non-letter poses, in capture order."""
+    parts = []
+    for s in sessions:
+        with np.load(config.OTHER_DIR / f"{s}.npz") as d:
+            aspect = d["frame_size"][:, 0] / d["frame_size"][:, 1]
+            parts.append(np.stack([normalize(lm, aspect=a) for lm, a in zip(d["landmarks"], aspect)]))
+    return np.concatenate(parts)
+
+
+def other_splits(seed=config.SEED):
+    """The "other" class: OTHER_TEST_SESSIONS are held out as test; the rest is split
+    train / val by blocks of consecutive captures (neighbours are near-duplicates)."""
+    sessions = sorted(p.stem for p in config.OTHER_DIR.glob("*.npz"))
+    test_sessions = [s for s in sessions if s in OTHER_TEST_SESSIONS]
+    pool = load_other([s for s in sessions if s not in OTHER_TEST_SESSIONS])
+    blocks = np.arange(len(pool)) // OTHER_BLOCK
+    order = np.random.default_rng(seed).permutation(np.unique(blocks))
+    n_val = max(1, round(len(order) * VAL_FRACTION))
+    val = np.isin(blocks, order[:n_val])
+    label = config.OTHER_INDEX
+    test = load_other(test_sessions) if test_sessions else np.empty((0, pool.shape[1]), np.float32)
+    return {
+        "train": (pool[~val], np.full((~val).sum(), label)),
+        "val": (pool[val], np.full(val.sum(), label)),
+        "test": (test, np.full(len(test), label)),
+    }
+
+
+def landmark_splits(mode="block", include_enhanced=True, mirror_train=True, with_other=False):
     """Normalized landmark features for the MLP: {"train": (X, y), "val": ..., "test": ...}.
 
     include_enhanced only filters the training set, so val/test stay identical
     when comparing training with and without the brightened samples.
+    with_other adds the recorded non-letter poses as class OTHER_INDEX.
     """
     data = load_letters()
     X = normalize(data["landmarks"])
@@ -71,6 +104,10 @@ def landmark_splits(mode="block", include_enhanced=True, mirror_train=True):
         idx["train"] = idx["train"][~data["enhanced"][idx["train"]]]
 
     out = {name: (X[i], data["labels"][i]) for name, i in idx.items()}
+    if with_other:
+        other = other_splits()
+        out = {name: (np.concatenate([X_, other[name][0]]), np.concatenate([y_, other[name][1]]))
+               for name, (X_, y_) in out.items()}
     if mirror_train:
         X_tr, y_tr = out["train"]
         out["train"] = (np.concatenate([X_tr, mirror(X_tr)]), np.concatenate([y_tr, y_tr]))

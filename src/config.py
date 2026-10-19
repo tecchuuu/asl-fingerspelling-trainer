@@ -6,6 +6,7 @@ DATA_DIR = ROOT / "data"
 RAW_TRAIN_DIR = DATA_DIR / "raw" / "asl_alphabet_train"
 PROCESSED_DIR = DATA_DIR / "processed"
 WEBCAM_TEST_DIR = DATA_DIR / "webcam_test"
+OTHER_DIR = DATA_DIR / "other"  # my recordings of non-letter hand poses, for the "other" class
 
 HAND_MODEL_PATH = ROOT / "models" / "hand_landmarker.task"
 
@@ -18,6 +19,10 @@ HISTORY_DIR = RESULTS_DIR / "history"
 # J and Z need motion. "nothing" has no hand, so MediaPipe finding no hand plays that role.
 LETTERS = list("ABCDEFGHIKLMNOPQRSTUVWXY")
 NUM_CLASSES = len(LETTERS)
+# Extra MLP class for hands that aren't signing a letter (open hand, resting, moving).
+# Without it the MLP must pick one of the 24 letters for any hand it sees.
+OTHER = "other"
+OTHER_INDEX = NUM_CLASSES
 
 NUM_LANDMARKS = 21
 CROP_SIZE = 64

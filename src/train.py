@@ -32,7 +32,8 @@ RUN_FIELDS = [
 
 def parse_args():
     p = argparse.ArgumentParser()
-    p.add_argument("--model", choices=["mlp", "cnn"], default="mlp")
+    p.add_argument("--model", choices=["mlp", "mlp_other", "cnn"], default="mlp",
+                   help="mlp_other: MLP with a 25th class for non-letter hands")
     p.add_argument("--optimizer", choices=["adam", "sgd"], default="adam")
     p.add_argument("--lr", type=float, default=1e-3)
     p.add_argument("--momentum", type=float, default=0.9, help="SGD only")
@@ -97,12 +98,19 @@ def main():
     device = "cuda" if torch.cuda.is_available() else "cpu"
     run_id = f"{datetime.now():%Y%m%d-%H%M%S}_{args.model}_{args.optimizer}_bs{args.batch_size}"
 
-    load_splits = landmark_splits if args.model == "mlp" else crop_splits
-    splits = load_splits(args.split, include_enhanced=not args.no_enhanced, mirror_train=not args.no_mirror)
+    split_args = dict(include_enhanced=not args.no_enhanced, mirror_train=not args.no_mirror)
+    if args.model == "cnn":
+        splits = crop_splits(args.split, **split_args)
+    else:
+        splits = landmark_splits(args.split, with_other=args.model == "mlp_other", **split_args)
     train_loader = to_loader(*splits["train"], batch_size=args.batch_size, shuffle=True)
     val_loader = to_loader(*splits["val"], batch_size=1024, shuffle=False)
 
-    model = (MLP if args.model == "mlp" else CNN)(dropout=args.dropout).to(device)
+    if args.model == "cnn":
+        model = CNN(dropout=args.dropout).to(device)
+    else:
+        num_classes = config.NUM_CLASSES + (args.model == "mlp_other")
+        model = MLP(dropout=args.dropout, num_classes=num_classes).to(device)
     optimizer = make_optimizer(args, model.parameters())
     scheduler = (torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.5, patience=2)
                  if args.scheduler == "plateau" else None)

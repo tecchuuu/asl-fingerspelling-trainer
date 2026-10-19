@@ -29,8 +29,13 @@ STANDARD_PREFIX = "standard"
 
 
 def load_final(name):
+    """name: "mlp", "mlp_other" or "cnn" -> models/<name>_final.pt"""
     ckpt = torch.load(MODELS_DIR / f"{name}_final.pt", map_location="cpu")
-    model = (MLP if name == "mlp" else CNN)(dropout=ckpt["args"]["dropout"])
+    if name == "cnn":
+        model = CNN(dropout=ckpt["args"]["dropout"])
+    else:
+        num_classes = config.NUM_CLASSES + (ckpt["args"]["model"] == "mlp_other")
+        model = MLP(dropout=ckpt["args"]["dropout"], num_classes=num_classes)
     model.load_state_dict(ckpt["model_state"])
     model.eval()
     return model

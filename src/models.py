@@ -4,16 +4,16 @@ from src import config
 
 
 class MLP(nn.Module):
-    """Model B: 63 normalized landmark features -> 24 letter scores."""
+    """Model B: 63 normalized landmark features -> 24 letter scores (25 with the "other" class)."""
 
-    def __init__(self, hidden=(256, 128), dropout=0.3):
+    def __init__(self, hidden=(256, 128), dropout=0.3, num_classes=config.NUM_CLASSES):
         super().__init__()
         layers = []
         in_size = config.NUM_LANDMARKS * 3
         for size in hidden:
             layers += [nn.Linear(in_size, size), nn.ReLU(), nn.Dropout(dropout)]
             in_size = size
-        layers.append(nn.Linear(in_size, config.NUM_CLASSES))
+        layers.append(nn.Linear(in_size, num_classes))
         self.net = nn.Sequential(*layers)
 
     def forward(self, x):

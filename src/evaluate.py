@@ -37,7 +37,10 @@ def best_run(model_name):
 def load_model(run_id):
     ckpt = torch.load(config.CHECKPOINTS_DIR / f"{run_id}.pt", map_location="cpu")
     args = ckpt["args"]
-    model = (MLP if args["model"] == "mlp" else CNN)(dropout=args["dropout"])
+    if args["model"] == "cnn":
+        model = CNN(dropout=args["dropout"])
+    else:
+        model = MLP(dropout=args["dropout"], num_classes=config.NUM_CLASSES + (args["model"] == "mlp_other"))
     model.load_state_dict(ckpt["model_state"])
     model.eval()
     return model, ckpt

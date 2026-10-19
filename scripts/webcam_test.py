@@ -21,6 +21,7 @@ MODEL_URL = (
 )
 CAMERA_INDEX = 0
 NUM_HANDS = 2
+WINDOW = "Webcam test"
 
 GREEN = (0, 255, 0)
 RED = (0, 0, 255)
@@ -111,10 +112,10 @@ def main():
             for i, text in enumerate(lines):
                 cv2.putText(frame, text, (10, 25 + i * 25), cv2.FONT_HERSHEY_SIMPLEX, 0.6, WHITE, 2)
 
-            cv2.imshow("Webcam test", frame)
+            cv2.imshow(WINDOW, frame)
 
             key = cv2.waitKey(1) & 0xFF
-            if key in (ord("q"), 27):
+            if key in (ord("q"), 27) or cv2.getWindowProperty(WINDOW, cv2.WND_PROP_VISIBLE) < 1:
                 break
             if key == ord("m"):
                 mirror = not mirror

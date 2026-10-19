@@ -271,8 +271,25 @@ All sessions recorded before any per-letter result was looked at. `screen-left` 
 
 ## 6. Live app
 
-- Gate settings:
-- Double-letter rule:
+### Confidence gate (`src/gate.py`, checks in `scripts/check_gate.py`)
+
+The MLP predicts every frame (~30/s). While the hand moves between letters it flickers through wrong guesses, so raw predictions can't be typed directly. The gate decides when a prediction becomes a typed letter:
+
+1. **Type:** the same letter wins **10 frames in a row** (~⅓ s) with **confidence ≥ 0.8**.
+2. **No repeats while held:** after typing, the same letter can't be typed again until another letter is typed or the hand has been gone for **5 frames**. Shorter hand losses (≤ 4 frames) and brief confidence dips don't re-arm, so tracking hiccups don't cause duplicate letters.
+3. **Double letters (LL, SS):** while the same letter is held, sliding the wrist sideways by **≥ 0.6 palm lengths** from where it was typed types it again (how signers mark doubles). Measured in palm lengths, not pixels, so it works at any distance from the camera.
+
+- Same gate code is used by the live demo and (later) the web app.
+- Checked on 11 fake frame sequences, all pass: one letter per hold, flicker ignored, too-short or low-confidence holds ignored, hand leaving and returning, short hand loss, confidence blip, double via slide, small drift is not a double, "HELLO".
+- Settings are first guesses; to tune on the live demo (too slow → fewer frames / lower threshold; flickery → more frames).
+- Known limitation: fast signing can skip letters (each needs ~⅓ s stable); a sequence model (CTC) would handle continuous spelling properly.
+
+### Live demo and speed (`scripts/live_demo.py`)
+
+Webcam → MediaPipe → `normalize` → MLP → gate → typed text, with per-frame timings shown on screen and a median / 95th-percentile summary printed on exit.
+
+- Gate settings (tuned):
+- Double-letter rule (tested live):
 - End-to-end ms per frame:
 
 ## 7. Problems and fixes
