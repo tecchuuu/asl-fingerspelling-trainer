@@ -2,15 +2,15 @@ import { useEffect, useState } from "react";
 import { getProgress } from "../lib/api.js";
 import { categoryById, LETTERS } from "../lib/words.js";
 
-// Accuracy is a magnitude, so one hue stepped dim -> bright (validated against the dark
-// panel surface with the dataviz palette checker: monotone, single hue, darkest step 2.2:1).
-// Red/green stay reserved for status; every tile also prints its percentage.
+// Accuracy is a magnitude, so one hue stepped from faint to strong; the steps live in
+// styles.css (--acc-1..5) and are validated per theme surface. Red/green stay reserved
+// for status; every tile also prints its percentage.
 const ACCURACY_BINS = [
-  { min: 0, label: "< 50%", fill: "#1c5cab", ink: "#f8fafc" },
-  { min: 0.5, label: "50–70%", fill: "#2a78d6", ink: "#f8fafc" },
-  { min: 0.7, label: "70–85%", fill: "#5598e7", ink: "#0f172a" },
-  { min: 0.85, label: "85–95%", fill: "#86b6ef", ink: "#0f172a" },
-  { min: 0.95, label: "95%+", fill: "#b7d3f6", ink: "#0f172a" },
+  { min: 0, label: "< 50%", step: 1 },
+  { min: 0.5, label: "50–70%", step: 2 },
+  { min: 0.7, label: "70–85%", step: 3 },
+  { min: 0.85, label: "85–95%", step: 4 },
+  { min: 0.95, label: "95%+", step: 5 },
 ];
 const FOCUS_MIN_ATTEMPTS = 3; // don't call a letter weak on one or two tries
 
@@ -83,8 +83,7 @@ export default function ProgressPage({ onStart }) {
                 return (
                   <div
                     key={letter}
-                    className={`letter-tile ${s ? "" : "untried"}`}
-                    style={bin ? { background: bin.fill, color: bin.ink } : undefined}
+                    className={`letter-tile ${bin ? `bin-${bin.step}` : "untried"}`}
                     onMouseEnter={(e) => {
                       const r = e.currentTarget.getBoundingClientRect();
                       setHover({ letter, x: r.left + r.width / 2, y: r.top });
@@ -98,7 +97,7 @@ export default function ProgressPage({ onStart }) {
             </div>
             <div className="legend-row small">
               {ACCURACY_BINS.map((b) => (
-                <span key={b.label}><i style={{ background: b.fill }} />{b.label}</span>
+                <span key={b.label}><i style={{ background: `var(--acc-${b.step})` }} />{b.label}</span>
               ))}
               <span><i className="untried-swatch" />not tried yet</span>
             </div>

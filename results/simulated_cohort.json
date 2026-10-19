@@ -1,0 +1,1189 @@
+{
+ "simulated": true,
+ "note": "SIMULATED cohort for illustrating the trainer dashboard. Not real users.",
+ "assumptions": {
+  "learners": 20,
+  "weeks": 4,
+  "seed": 42,
+  "sessions_per_week_range": [
+   1,
+   5
+  ],
+  "letters_per_session_range": [
+   150,
+   300
+  ],
+  "seconds_per_attempt": 3.0,
+  "skill_sd_logit": 0.7,
+  "learning_per_attempt_logit": 0.12,
+  "practice_max_tries": 6,
+  "exam_max_misses": 3,
+  "exam_words": 5,
+  "mastery": "4 of the last 5 attempts at the letter correct",
+  "shape_start_prob": {
+   "easy": 0.75,
+   "medium": 0.6,
+   "hard": 0.45
+  },
+  "shape_groups": {
+   "easy": "BCDILOY",
+   "medium": "FKRUVWX",
+   "hard": "AEMNSTGHPQ"
+  }
+ },
+ "model_acceptance": {
+  "source": "webcam test sessions ['room-left', 'room-right', 'screen-right'] (216 samples), mlp_other + pinch guard, Laplace-smoothed (hits+1)/(n+2)",
+  "per_letter": {
+   "A": 0.909,
+   "B": 0.909,
+   "C": 0.909,
+   "D": 0.909,
+   "E": 0.909,
+   "F": 0.909,
+   "G": 0.909,
+   "H": 0.909,
+   "I": 0.909,
+   "K": 0.909,
+   "L": 0.909,
+   "M": 0.909,
+   "N": 0.909,
+   "O": 0.364,
+   "P": 0.909,
+   "Q": 0.455,
+   "R": 0.909,
+   "S": 0.636,
+   "T": 0.818,
+   "U": 0.909,
+   "V": 0.909,
+   "W": 0.909,
+   "X": 0.909,
+   "Y": 0.636
+  }
+ },
+ "summary": {
+  "learners": 20,
+  "letters_mastered_min_median_max": [
+   16,
+   19,
+   21
+  ],
+  "median_final_exam": 0.823,
+  "mean_letters_mastered": 18.9,
+  "total_practice_hours": 43.9,
+  "weekly_mastered_mean": [
+   15.4,
+   18.6,
+   18.8,
+   18.9
+  ],
+  "weekly_exam_mean": [
+   0.773,
+   0.84,
+   0.843,
+   0.828
+  ]
+ },
+ "letters": [
+  {
+   "letter": "A",
+   "attempts": 3120,
+   "first_try_accuracy": 0.887,
+   "attempts_per_success_estimate": 1.14,
+   "attempts_per_learner": 156.0,
+   "model_acceptance": 0.909,
+   "learners_mastered": 20
+  },
+  {
+   "letter": "B",
+   "attempts": 1314,
+   "first_try_accuracy": 0.876,
+   "attempts_per_success_estimate": 1.15,
+   "attempts_per_learner": 65.7,
+   "model_acceptance": 0.909,
+   "learners_mastered": 18
+  },
+  {
+   "letter": "C",
+   "attempts": 1684,
+   "first_try_accuracy": 0.877,
+   "attempts_per_success_estimate": 1.14,
+   "attempts_per_learner": 84.2,
+   "model_acceptance": 0.909,
+   "learners_mastered": 20
+  },
+  {
+   "letter": "D",
+   "attempts": 1756,
+   "first_try_accuracy": 0.887,
+   "attempts_per_success_estimate": 1.13,
+   "attempts_per_learner": 87.8,
+   "model_acceptance": 0.909,
+   "learners_mastered": 19
+  },
+  {
+   "letter": "E",
+   "attempts": 5592,
+   "first_try_accuracy": 0.893,
+   "attempts_per_success_estimate": 1.12,
+   "attempts_per_learner": 279.6,
+   "model_acceptance": 0.909,
+   "learners_mastered": 18
+  },
+  {
+   "letter": "F",
+   "attempts": 1209,
+   "first_try_accuracy": 0.856,
+   "attempts_per_success_estimate": 1.18,
+   "attempts_per_learner": 60.5,
+   "model_acceptance": 0.909,
+   "learners_mastered": 20
+  },
+  {
+   "letter": "G",
+   "attempts": 1311,
+   "first_try_accuracy": 0.839,
+   "attempts_per_success_estimate": 1.22,
+   "attempts_per_learner": 65.5,
+   "model_acceptance": 0.909,
+   "learners_mastered": 19
+  },
+  {
+   "letter": "H",
+   "attempts": 1305,
+   "first_try_accuracy": 0.839,
+   "attempts_per_success_estimate": 1.22,
+   "attempts_per_learner": 65.2,
+   "model_acceptance": 0.909,
+   "learners_mastered": 17
+  },
+  {
+   "letter": "I",
+   "attempts": 1783,
+   "first_try_accuracy": 0.883,
+   "attempts_per_success_estimate": 1.14,
+   "attempts_per_learner": 89.2,
+   "model_acceptance": 0.909,
+   "learners_mastered": 19
+  },
+  {
+   "letter": "K",
+   "attempts": 1300,
+   "first_try_accuracy": 0.862,
+   "attempts_per_success_estimate": 1.16,
+   "attempts_per_learner": 65.0,
+   "model_acceptance": 0.909,
+   "learners_mastered": 20
+  },
+  {
+   "letter": "L",
+   "attempts": 3665,
+   "first_try_accuracy": 0.9,
+   "attempts_per_success_estimate": 1.12,
+   "attempts_per_learner": 183.2,
+   "model_acceptance": 0.909,
+   "learners_mastered": 18
+  },
+  {
+   "letter": "M",
+   "attempts": 1121,
+   "first_try_accuracy": 0.833,
+   "attempts_per_success_estimate": 1.23,
+   "attempts_per_learner": 56.0,
+   "model_acceptance": 0.909,
+   "learners_mastered": 20
+  },
+  {
+   "letter": "N",
+   "attempts": 2997,
+   "first_try_accuracy": 0.877,
+   "attempts_per_success_estimate": 1.15,
+   "attempts_per_learner": 149.8,
+   "model_acceptance": 0.909,
+   "learners_mastered": 20
+  },
+  {
+   "letter": "O",
+   "attempts": 10275,
+   "first_try_accuracy": 0.363,
+   "attempts_per_success_estimate": 2.58,
+   "attempts_per_learner": 513.8,
+   "model_acceptance": 0.364,
+   "learners_mastered": 1
+  },
+  {
+   "letter": "P",
+   "attempts": 1732,
+   "first_try_accuracy": 0.862,
+   "attempts_per_success_estimate": 1.18,
+   "attempts_per_learner": 86.6,
+   "model_acceptance": 0.909,
+   "learners_mastered": 20
+  },
+  {
+   "letter": "Q",
+   "attempts": 438,
+   "first_try_accuracy": 0.345,
+   "attempts_per_success_estimate": 2.61,
+   "attempts_per_learner": 21.9,
+   "model_acceptance": 0.455,
+   "learners_mastered": 2
+  },
+  {
+   "letter": "R",
+   "attempts": 2575,
+   "first_try_accuracy": 0.885,
+   "attempts_per_success_estimate": 1.14,
+   "attempts_per_learner": 128.8,
+   "model_acceptance": 0.909,
+   "learners_mastered": 19
+  },
+  {
+   "letter": "S",
+   "attempts": 2802,
+   "first_try_accuracy": 0.609,
+   "attempts_per_success_estimate": 1.66,
+   "attempts_per_learner": 140.1,
+   "model_acceptance": 0.636,
+   "learners_mastered": 6
+  },
+  {
+   "letter": "T",
+   "attempts": 199,
+   "first_try_accuracy": 0.533,
+   "attempts_per_success_estimate": 1.86,
+   "attempts_per_learner": 9.9,
+   "model_acceptance": 0.818,
+   "learners_mastered": 5
+  },
+  {
+   "letter": "U",
+   "attempts": 1022,
+   "first_try_accuracy": 0.842,
+   "attempts_per_success_estimate": 1.2,
+   "attempts_per_learner": 51.1,
+   "model_acceptance": 0.909,
+   "learners_mastered": 19
+  },
+  {
+   "letter": "V",
+   "attempts": 422,
+   "first_try_accuracy": 0.777,
+   "attempts_per_success_estimate": 1.29,
+   "attempts_per_learner": 21.1,
+   "model_acceptance": 0.909,
+   "learners_mastered": 18
+  },
+  {
+   "letter": "W",
+   "attempts": 1076,
+   "first_try_accuracy": 0.856,
+   "attempts_per_success_estimate": 1.17,
+   "attempts_per_learner": 53.8,
+   "model_acceptance": 0.909,
+   "learners_mastered": 19
+  },
+  {
+   "letter": "X",
+   "attempts": 154,
+   "first_try_accuracy": 0.68,
+   "attempts_per_success_estimate": 1.54,
+   "attempts_per_learner": 7.7,
+   "model_acceptance": 0.909,
+   "learners_mastered": 8
+  },
+  {
+   "letter": "Y",
+   "attempts": 1506,
+   "first_try_accuracy": 0.609,
+   "attempts_per_success_estimate": 1.62,
+   "attempts_per_learner": 75.3,
+   "model_acceptance": 0.636,
+   "learners_mastered": 12
+  }
+ ],
+ "learners": [
+  {
+   "name": "Learner 01",
+   "sessions_per_week": 2.8,
+   "attempts": 2385,
+   "practice_minutes": 119.2,
+   "weekly": [
+    {
+     "week": 1,
+     "sessions": 5,
+     "letters_mastered": 18,
+     "exam_category": "doubles",
+     "exam_score": 0.852
+    },
+    {
+     "week": 2,
+     "sessions": 1,
+     "letters_mastered": 19,
+     "exam_category": "nature",
+     "exam_score": 0.952
+    },
+    {
+     "week": 3,
+     "sessions": 1,
+     "letters_mastered": 19,
+     "exam_category": "doubles",
+     "exam_score": 0.857
+    },
+    {
+     "week": 4,
+     "sessions": 2,
+     "letters_mastered": 18,
+     "exam_category": "doubles",
+     "exam_score": 0.792
+    }
+   ],
+   "letters_mastered": 18,
+   "not_mastered": [
+    "E",
+    "H",
+    "O",
+    "Q",
+    "S",
+    "T"
+   ]
+  },
+  {
+   "name": "Learner 02",
+   "sessions_per_week": 3.8,
+   "attempts": 3513,
+   "practice_minutes": 175.7,
+   "weekly": [
+    {
+     "week": 1,
+     "sessions": 1,
+     "letters_mastered": 7,
+     "exam_category": "everyday",
+     "exam_score": 0.417
+    },
+    {
+     "week": 2,
+     "sessions": 4,
+     "letters_mastered": 18,
+     "exam_category": "food",
+     "exam_score": 0.87
+    },
+    {
+     "week": 3,
+     "sessions": 6,
+     "letters_mastered": 17,
+     "exam_category": "nature",
+     "exam_score": 0.684
+    },
+    {
+     "week": 4,
+     "sessions": 4,
+     "letters_mastered": 20,
+     "exam_category": "food",
+     "exam_score": 0.8
+    }
+   ],
+   "letters_mastered": 20,
+   "not_mastered": [
+    "O",
+    "Q",
+    "T",
+    "X"
+   ]
+  },
+  {
+   "name": "Learner 03",
+   "sessions_per_week": 4.9,
+   "attempts": 3592,
+   "practice_minutes": 179.6,
+   "weekly": [
+    {
+     "week": 1,
+     "sessions": 5,
+     "letters_mastered": 19,
+     "exam_category": "doubles",
+     "exam_score": 0.682
+    },
+    {
+     "week": 2,
+     "sessions": 3,
+     "letters_mastered": 18,
+     "exam_category": "food",
+     "exam_score": 0.762
+    },
+    {
+     "week": 3,
+     "sessions": 4,
+     "letters_mastered": 20,
+     "exam_category": "animals",
+     "exam_score": 0.913
+    },
+    {
+     "week": 4,
+     "sessions": 2,
+     "letters_mastered": 18,
+     "exam_category": "food",
+     "exam_score": 0.864
+    }
+   ],
+   "letters_mastered": 18,
+   "not_mastered": [
+    "O",
+    "Q",
+    "S",
+    "W",
+    "X",
+    "Y"
+   ]
+  },
+  {
+   "name": "Learner 04",
+   "sessions_per_week": 4.1,
+   "attempts": 4518,
+   "practice_minutes": 225.9,
+   "weekly": [
+    {
+     "week": 1,
+     "sessions": 3,
+     "letters_mastered": 19,
+     "exam_category": "nature",
+     "exam_score": 0.808
+    },
+    {
+     "week": 2,
+     "sessions": 6,
+     "letters_mastered": 19,
+     "exam_category": "doubles",
+     "exam_score": 0.76
+    },
+    {
+     "week": 3,
+     "sessions": 3,
+     "letters_mastered": 22,
+     "exam_category": "food",
+     "exam_score": 0.955
+    },
+    {
+     "week": 4,
+     "sessions": 8,
+     "letters_mastered": 18,
+     "exam_category": "everyday",
+     "exam_score": 0.75
+    }
+   ],
+   "letters_mastered": 18,
+   "not_mastered": [
+    "G",
+    "O",
+    "Q",
+    "S",
+    "T",
+    "Y"
+   ]
+  },
+  {
+   "name": "Learner 05",
+   "sessions_per_week": 2.8,
+   "attempts": 3336,
+   "practice_minutes": 166.8,
+   "weekly": [
+    {
+     "week": 1,
+     "sessions": 5,
+     "letters_mastered": 18,
+     "exam_category": "doubles",
+     "exam_score": 0.773
+    },
+    {
+     "week": 2,
+     "sessions": 5,
+     "letters_mastered": 20,
+     "exam_category": "everyday",
+     "exam_score": 0.852
+    },
+    {
+     "week": 3,
+     "sessions": 2,
+     "letters_mastered": 21,
+     "exam_category": "colors",
+     "exam_score": 0.952
+    },
+    {
+     "week": 4,
+     "sessions": 1,
+     "letters_mastered": 20,
+     "exam_category": "everyday",
+     "exam_score": 0.792
+    }
+   ],
+   "letters_mastered": 20,
+   "not_mastered": [
+    "O",
+    "Q",
+    "S",
+    "T"
+   ]
+  },
+  {
+   "name": "Learner 06",
+   "sessions_per_week": 4.7,
+   "attempts": 3756,
+   "practice_minutes": 187.8,
+   "weekly": [
+    {
+     "week": 1,
+     "sessions": 4,
+     "letters_mastered": 19,
+     "exam_category": "nature",
+     "exam_score": 0.947
+    },
+    {
+     "week": 2,
+     "sessions": 3,
+     "letters_mastered": 20,
+     "exam_category": "food",
+     "exam_score": 0.833
+    },
+    {
+     "week": 3,
+     "sessions": 4,
+     "letters_mastered": 18,
+     "exam_category": "colors",
+     "exam_score": 0.828
+    },
+    {
+     "week": 4,
+     "sessions": 4,
+     "letters_mastered": 19,
+     "exam_category": "nature",
+     "exam_score": 0.714
+    }
+   ],
+   "letters_mastered": 19,
+   "not_mastered": [
+    "O",
+    "Q",
+    "S",
+    "T",
+    "X"
+   ]
+  },
+  {
+   "name": "Learner 07",
+   "sessions_per_week": 4.3,
+   "attempts": 2481,
+   "practice_minutes": 124.0,
+   "weekly": [
+    {
+     "week": 1,
+     "sessions": 5,
+     "letters_mastered": 18,
+     "exam_category": "animals",
+     "exam_score": 0.773
+    },
+    {
+     "week": 2,
+     "sessions": 2,
+     "letters_mastered": 19,
+     "exam_category": "nature",
+     "exam_score": 0.696
+    },
+    {
+     "week": 3,
+     "sessions": 1,
+     "letters_mastered": 19,
+     "exam_category": "food",
+     "exam_score": 0.857
+    },
+    {
+     "week": 4,
+     "sessions": 2,
+     "letters_mastered": 20,
+     "exam_category": "everyday",
+     "exam_score": 0.846
+    }
+   ],
+   "letters_mastered": 20,
+   "not_mastered": [
+    "O",
+    "Q",
+    "S",
+    "V"
+   ]
+  },
+  {
+   "name": "Learner 08",
+   "sessions_per_week": 1.9,
+   "attempts": 1603,
+   "practice_minutes": 80.2,
+   "weekly": [
+    {
+     "week": 1,
+     "sessions": 1,
+     "letters_mastered": 10,
+     "exam_category": "colors",
+     "exam_score": 0.727
+    },
+    {
+     "week": 2,
+     "sessions": 2,
+     "letters_mastered": 15,
+     "exam_category": "animals",
+     "exam_score": 0.857
+    },
+    {
+     "week": 3,
+     "sessions": 1,
+     "letters_mastered": 17,
+     "exam_category": "doubles",
+     "exam_score": 0.917
+    },
+    {
+     "week": 4,
+     "sessions": 3,
+     "letters_mastered": 19,
+     "exam_category": "nature",
+     "exam_score": 0.955
+    }
+   ],
+   "letters_mastered": 19,
+   "not_mastered": [
+    "O",
+    "Q",
+    "T",
+    "X",
+    "Y"
+   ]
+  },
+  {
+   "name": "Learner 09",
+   "sessions_per_week": 1.3,
+   "attempts": 1778,
+   "practice_minutes": 88.9,
+   "weekly": [
+    {
+     "week": 1,
+     "sessions": 4,
+     "letters_mastered": 19,
+     "exam_category": "everyday",
+     "exam_score": 0.84
+    },
+    {
+     "week": 2,
+     "sessions": 1,
+     "letters_mastered": 20,
+     "exam_category": "everyday",
+     "exam_score": 0.826
+    },
+    {
+     "week": 3,
+     "sessions": 1,
+     "letters_mastered": 19,
+     "exam_category": "colors",
+     "exam_score": 0.923
+    },
+    {
+     "week": 4,
+     "sessions": 1,
+     "letters_mastered": 20,
+     "exam_category": "food",
+     "exam_score": 0.857
+    }
+   ],
+   "letters_mastered": 20,
+   "not_mastered": [
+    "O",
+    "Q",
+    "S",
+    "T"
+   ]
+  },
+  {
+   "name": "Learner 10",
+   "sessions_per_week": 3.5,
+   "attempts": 3062,
+   "practice_minutes": 153.1,
+   "weekly": [
+    {
+     "week": 1,
+     "sessions": 4,
+     "letters_mastered": 18,
+     "exam_category": "nature",
+     "exam_score": 0.852
+    },
+    {
+     "week": 2,
+     "sessions": 3,
+     "letters_mastered": 21,
+     "exam_category": "everyday",
+     "exam_score": 0.833
+    },
+    {
+     "week": 3,
+     "sessions": 5,
+     "letters_mastered": 17,
+     "exam_category": "food",
+     "exam_score": 0.714
+    },
+    {
+     "week": 4,
+     "sessions": 0,
+     "letters_mastered": 19,
+     "exam_category": "nature",
+     "exam_score": 0.619
+    }
+   ],
+   "letters_mastered": 19,
+   "not_mastered": [
+    "H",
+    "O",
+    "Q",
+    "X",
+    "Y"
+   ]
+  },
+  {
+   "name": "Learner 11",
+   "sessions_per_week": 2.4,
+   "attempts": 1711,
+   "practice_minutes": 85.5,
+   "weekly": [
+    {
+     "week": 1,
+     "sessions": 1,
+     "letters_mastered": 8,
+     "exam_category": "food",
+     "exam_score": 0.727
+    },
+    {
+     "week": 2,
+     "sessions": 2,
+     "letters_mastered": 17,
+     "exam_category": "doubles",
+     "exam_score": 0.889
+    },
+    {
+     "week": 3,
+     "sessions": 3,
+     "letters_mastered": 18,
+     "exam_category": "doubles",
+     "exam_score": 0.8
+    },
+    {
+     "week": 4,
+     "sessions": 1,
+     "letters_mastered": 20,
+     "exam_category": "colors",
+     "exam_score": 0.92
+    }
+   ],
+   "letters_mastered": 20,
+   "not_mastered": [
+    "O",
+    "Q",
+    "T",
+    "X"
+   ]
+  },
+  {
+   "name": "Learner 12",
+   "sessions_per_week": 4.6,
+   "attempts": 3128,
+   "practice_minutes": 156.4,
+   "weekly": [
+    {
+     "week": 1,
+     "sessions": 2,
+     "letters_mastered": 16,
+     "exam_category": "everyday",
+     "exam_score": 0.682
+    },
+    {
+     "week": 2,
+     "sessions": 3,
+     "letters_mastered": 20,
+     "exam_category": "doubles",
+     "exam_score": 0.885
+    },
+    {
+     "week": 3,
+     "sessions": 8,
+     "letters_mastered": 17,
+     "exam_category": "animals",
+     "exam_score": 0.652
+    },
+    {
+     "week": 4,
+     "sessions": 1,
+     "letters_mastered": 18,
+     "exam_category": "animals",
+     "exam_score": 0.905
+    }
+   ],
+   "letters_mastered": 18,
+   "not_mastered": [
+    "D",
+    "Q",
+    "S",
+    "T",
+    "X",
+    "Y"
+   ]
+  },
+  {
+   "name": "Learner 13",
+   "sessions_per_week": 1.8,
+   "attempts": 1195,
+   "practice_minutes": 59.8,
+   "weekly": [
+    {
+     "week": 1,
+     "sessions": 4,
+     "letters_mastered": 22,
+     "exam_category": "food",
+     "exam_score": 0.917
+    },
+    {
+     "week": 2,
+     "sessions": 0,
+     "letters_mastered": 19,
+     "exam_category": "everyday",
+     "exam_score": 0.75
+    },
+    {
+     "week": 3,
+     "sessions": 0,
+     "letters_mastered": 19,
+     "exam_category": "nature",
+     "exam_score": 0.762
+    },
+    {
+     "week": 4,
+     "sessions": 1,
+     "letters_mastered": 18,
+     "exam_category": "colors",
+     "exam_score": 0.92
+    }
+   ],
+   "letters_mastered": 18,
+   "not_mastered": [
+    "O",
+    "Q",
+    "S",
+    "T",
+    "V",
+    "Y"
+   ]
+  },
+  {
+   "name": "Learner 14",
+   "sessions_per_week": 1.2,
+   "attempts": 1674,
+   "practice_minutes": 83.7,
+   "weekly": [
+    {
+     "week": 1,
+     "sessions": 0,
+     "letters_mastered": 1,
+     "exam_category": "food",
+     "exam_score": 0.625
+    },
+    {
+     "week": 2,
+     "sessions": 4,
+     "letters_mastered": 19,
+     "exam_category": "animals",
+     "exam_score": 0.857
+    },
+    {
+     "week": 3,
+     "sessions": 2,
+     "letters_mastered": 19,
+     "exam_category": "doubles",
+     "exam_score": 0.8
+    },
+    {
+     "week": 4,
+     "sessions": 1,
+     "letters_mastered": 19,
+     "exam_category": "colors",
+     "exam_score": 0.75
+    }
+   ],
+   "letters_mastered": 19,
+   "not_mastered": [
+    "B",
+    "O",
+    "Q",
+    "T",
+    "X"
+   ]
+  },
+  {
+   "name": "Learner 15",
+   "sessions_per_week": 3.7,
+   "attempts": 3394,
+   "practice_minutes": 169.7,
+   "weekly": [
+    {
+     "week": 1,
+     "sessions": 2,
+     "letters_mastered": 19,
+     "exam_category": "nature",
+     "exam_score": 0.864
+    },
+    {
+     "week": 2,
+     "sessions": 6,
+     "letters_mastered": 17,
+     "exam_category": "food",
+     "exam_score": 0.947
+    },
+    {
+     "week": 3,
+     "sessions": 3,
+     "letters_mastered": 20,
+     "exam_category": "colors",
+     "exam_score": 0.958
+    },
+    {
+     "week": 4,
+     "sessions": 4,
+     "letters_mastered": 17,
+     "exam_category": "colors",
+     "exam_score": 0.962
+    }
+   ],
+   "letters_mastered": 17,
+   "not_mastered": [
+    "O",
+    "Q",
+    "R",
+    "S",
+    "U",
+    "X",
+    "Y"
+   ]
+  },
+  {
+   "name": "Learner 16",
+   "sessions_per_week": 4.9,
+   "attempts": 3905,
+   "practice_minutes": 195.2,
+   "weekly": [
+    {
+     "week": 1,
+     "sessions": 7,
+     "letters_mastered": 20,
+     "exam_category": "colors",
+     "exam_score": 0.864
+    },
+    {
+     "week": 2,
+     "sessions": 3,
+     "letters_mastered": 22,
+     "exam_category": "animals",
+     "exam_score": 0.9
+    },
+    {
+     "week": 3,
+     "sessions": 4,
+     "letters_mastered": 19,
+     "exam_category": "doubles",
+     "exam_score": 0.87
+    },
+    {
+     "week": 4,
+     "sessions": 3,
+     "letters_mastered": 20,
+     "exam_category": "doubles",
+     "exam_score": 0.852
+    }
+   ],
+   "letters_mastered": 20,
+   "not_mastered": [
+    "O",
+    "Q",
+    "S",
+    "Y"
+   ]
+  },
+  {
+   "name": "Learner 17",
+   "sessions_per_week": 2.5,
+   "attempts": 1494,
+   "practice_minutes": 74.7,
+   "weekly": [
+    {
+     "week": 1,
+     "sessions": 4,
+     "letters_mastered": 18,
+     "exam_category": "animals",
+     "exam_score": 0.84
+    },
+    {
+     "week": 2,
+     "sessions": 1,
+     "letters_mastered": 20,
+     "exam_category": "animals",
+     "exam_score": 0.857
+    },
+    {
+     "week": 3,
+     "sessions": 1,
+     "letters_mastered": 20,
+     "exam_category": "food",
+     "exam_score": 0.75
+    },
+    {
+     "week": 4,
+     "sessions": 0,
+     "letters_mastered": 19,
+     "exam_category": "food",
+     "exam_score": 0.75
+    }
+   ],
+   "letters_mastered": 19,
+   "not_mastered": [
+    "E",
+    "O",
+    "Q",
+    "S",
+    "T"
+   ]
+  },
+  {
+   "name": "Learner 18",
+   "sessions_per_week": 1.8,
+   "attempts": 1481,
+   "practice_minutes": 74.0,
+   "weekly": [
+    {
+     "week": 1,
+     "sessions": 1,
+     "letters_mastered": 9,
+     "exam_category": "doubles",
+     "exam_score": 0.68
+    },
+    {
+     "week": 2,
+     "sessions": 1,
+     "letters_mastered": 15,
+     "exam_category": "nature",
+     "exam_score": 0.714
+    },
+    {
+     "week": 3,
+     "sessions": 2,
+     "letters_mastered": 18,
+     "exam_category": "colors",
+     "exam_score": 0.833
+    },
+    {
+     "week": 4,
+     "sessions": 3,
+     "letters_mastered": 21,
+     "exam_category": "food",
+     "exam_score": 0.76
+    }
+   ],
+   "letters_mastered": 21,
+   "not_mastered": [
+    "O",
+    "T",
+    "X"
+   ]
+  },
+  {
+   "name": "Learner 19",
+   "sessions_per_week": 2.9,
+   "attempts": 1872,
+   "practice_minutes": 93.6,
+   "weekly": [
+    {
+     "week": 1,
+     "sessions": 2,
+     "letters_mastered": 16,
+     "exam_category": "animals",
+     "exam_score": 0.87
+    },
+    {
+     "week": 2,
+     "sessions": 2,
+     "letters_mastered": 18,
+     "exam_category": "doubles",
+     "exam_score": 0.885
+    },
+    {
+     "week": 3,
+     "sessions": 2,
+     "letters_mastered": 19,
+     "exam_category": "colors",
+     "exam_score": 0.917
+    },
+    {
+     "week": 4,
+     "sessions": 2,
+     "letters_mastered": 16,
+     "exam_category": "animals",
+     "exam_score": 0.8
+    }
+   ],
+   "letters_mastered": 16,
+   "not_mastered": [
+    "B",
+    "H",
+    "I",
+    "L",
+    "O",
+    "S",
+    "T",
+    "X"
+   ]
+  },
+  {
+   "name": "Learner 20",
+   "sessions_per_week": 3.7,
+   "attempts": 2793,
+   "practice_minutes": 139.7,
+   "weekly": [
+    {
+     "week": 1,
+     "sessions": 2,
+     "letters_mastered": 14,
+     "exam_category": "everyday",
+     "exam_score": 0.727
+    },
+    {
+     "week": 2,
+     "sessions": 3,
+     "letters_mastered": 17,
+     "exam_category": "everyday",
+     "exam_score": 0.88
+    },
+    {
+     "week": 3,
+     "sessions": 1,
+     "letters_mastered": 17,
+     "exam_category": "nature",
+     "exam_score": 0.917
+    },
+    {
+     "week": 4,
+     "sessions": 6,
+     "letters_mastered": 18,
+     "exam_category": "food",
+     "exam_score": 0.957
+    }
+   ],
+   "letters_mastered": 18,
+   "not_mastered": [
+    "L",
+    "O",
+    "Q",
+    "S",
+    "T",
+    "X"
+   ]
+  }
+ ]
+}

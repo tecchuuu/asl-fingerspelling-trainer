@@ -11,6 +11,7 @@ waits ~2 s before falling back, which made every request take 2 s instead of 2 m
 
 import base64
 import csv
+import json
 from datetime import datetime
 from typing import Literal
 
@@ -99,6 +100,18 @@ def add_attempt(a: Attempt):
 @app.get("/api/progress")
 def progress():
     return db.progress()
+
+
+SIMULATED_COHORT = config.RESULTS_DIR / "simulated_cohort.json"
+
+
+@app.get("/api/trainer")
+def trainer():
+    """Trainer dashboard: the SIMULATED class (scripts/simulate_cohort.py) plus my real totals."""
+    if not SIMULATED_COHORT.exists():
+        raise HTTPException(404, "run python -m scripts.simulate_cohort first")
+    cohort = json.loads(SIMULATED_COHORT.read_text(encoding="utf-8"))
+    return {"cohort": cohort, "real": db.progress()["totals"]}
 
 
 @app.get("/api/health")

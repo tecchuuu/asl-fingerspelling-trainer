@@ -25,7 +25,8 @@ export default function HomePage({ onStart }) {
       <div className="cards">
         {CATEGORIES.map((c) => {
           const s = statsFor(c.id);
-          const done = s?.items_completed ?? 0;
+          // Capped: items logged under a category that later left its word list still count in the log
+          const done = Math.min(s?.items_completed ?? 0, c.items.length);
           return (
             <div key={c.id} className="card">
               <div className="card-head">

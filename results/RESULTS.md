@@ -309,6 +309,7 @@ The MLP predicts every frame (~30/s). While the hand moves between letters it fl
 - Dataset letter F1 is unchanged (98.1 → 98.0).
 - Limitation: "other" data is one person, one webcam angle; the guard is a hand-written rule built from one observed failure. A cleaner fix: non-letter examples from the same source and angle as the letters (more signers, varied cameras).
 - The app and live demo use `mlp_other_final.pt` + the guard (`letter_probs`). Report numbers for the MLP-vs-CNN comparison stay with the 24-class model.
+- **Regression found later (while building the simulated class): O → C.** On my webcam O's, the 24-class MLP reads 8/9 as O; the 25-class model reads only 3/9 as O and 6/9 as C (all with confidence 0.73–0.97). Adding the "other" class moved the O/C boundary. The overall webcam letter F1 (93.1% → 91.0%) hid it: one letter collapsing barely moves a 24-letter average. Lesson: compare per-letter results, not just the average, when changing a model. Options considered: retrain `mlp_other` and choose using a new O/C validation recording (keeping the webcam test untouched), or fall back to the 24-class model when the new one says C. **Decision: not fixed.** In live use a small change of hand angle gets O accepted, so it's an annoyance rather than a blocker; kept as a known limitation (and it's what makes O the most-stuck letter in the simulated class below).
 
 ### Live demo and speed (`scripts/live_demo.py`)
 
@@ -421,6 +422,31 @@ API: `POST /api/sessions`, `POST /api/sessions/{id}/finish`, `POST /api/attempts
 - **Exam history**: date, category, score.
 - Empty state links to Alphabet practice.
 - Verified in a browser with temporary sample data (227 attempts, 4 sessions; removed afterwards): tiles coloured by the right band, untried letter outlined, legend, hover tooltip, table view, focus list, mix-ups, exam history, no horizontal overflow. Not checked by eye (screenshots unavailable at the time).
+
+### Light / dark theme
+
+- All colours moved into CSS variables (`web/src/styles.css`); no hard-coded colours remain outside the theme blocks (camera background excepted). Default follows the OS (`prefers-color-scheme`); a ☀️/🌙 toggle in the nav sets an explicit theme, remembered in `localStorage` (wrapped in try/catch: if storage is blocked the toggle still works for the visit).
+- Letter-accuracy ramp per theme, both validated with the palette checker (single hue, monotone lightness, visible gaps, faintest step ≥ 2:1 on the panel): dark = brighter means more accurate (`#1c5cab` → `#b7d3f6`, faintest 2.2:1); light = darker means more accurate (`#86b6ef` → `#104281`, faintest 2.1:1 on white). Tile text colour flips per step so the printed percentage stays readable.
+- Status-like text colours adjusted for white backgrounds (success green `#15803d`, retry amber `#a16207`, warnings `#b45309`).
+- Verified with screenshots in both themes (home, My progress) plus computed colours: OS dark → dark theme, toggle → light with the light ramp, choice survives a reload. Fixed along the way: the letter grid now caps at 720 px (tiles were oversized on wide screens), and category cards cap "done" at the category size (sample data showed "23/12").
+
+### Trainer dashboard + simulated class (hub step 5)
+
+**Everything here is SIMULATED** (`scripts/simulate_cohort.py` → `results/simulated_cohort.json`, seed 42), labelled "Simulated" on the page, in the data file and here.
+
+Model (one attempt = the learner forms the right shape × the app recognises it):
+- **Measured, not assumed:** per-letter app recognition = share of my correctly signed webcam samples (3 sessions, 216 samples) the deployed model accepts, Laplace-smoothed (hits+1)/(n+2). Lowest: O 36%, Q 45%, S 64%, Y 64%, T 82%.
+- **Assumed (all written into the JSON):** 20 learners × 4 weeks; skill spread (logit SD 0.7); 1–5 sessions a week; 150–300 letters per session at 3 s each (7.5–15 min); beginner shape accuracy easy 75% / medium 60% / hard 45% (hard = closed fists A E M N S T and sideways/downward G H P Q); +0.12 logit per attempt (practice effect); week 1 mostly alphabet, then the app's word lists (parsed from `words.js` so they stay in sync); weekly exam = 5 words with the app's rules; mastered = 4 of the last 5 attempts correct.
+- Corrections during development: (1) the first session size (30–70 letters) didn't match its own "8–15 minutes" comment (it was 1.5–3.5 min) → fixed to 150–300. (2) A "completion = 22/24 letters mastered" metric gave 0%, because some letters are blocked by the app or the word lists rather than the learners; replaced by letters mastered per learner plus per-letter causes.
+
+Results (simulated):
+- Letters mastered per learner: median **19/24** (range 16–21); average 15.4 after week 1 → 18.9 after week 4. Average exam 77% → 83%. 43.9 h total practice.
+- **Where the class gets stuck, and why** (learners of 20 who mastered it): **O 1** (app recognises it 36%, the O → C regression above), **Q 2** (app 46%, Q → P), **T 5** and **X 8** (rarely practised: 9.9 and 7.7 tries per learner, because X appears in no word and T is kept out of word lists), **S 6** (app 64%).
+- So the dashboard separates two different problems a trainer would act on differently: **model limits** (O, Q, S: improve recognition) and **content gaps** (T, X: add practice items). Product follow-ups: fix O, add words containing X (and Q), revisit T.
+- **Instructor time saved** (on the page, assumptions editable): app practice hours ÷ drill group size. Defaults group 10, ฿400/hour → **4.4 instructor hours ≈ ฿1,756** over 4 weeks for this class of 20; group 5 → 8.8 h ≈ ฿3,512. Both inputs are assumptions, not sourced numbers.
+- Learners flagged "needs help" (icon + label, not colour alone): < 18 letters mastered or last exam < 70% → 3 of 20.
+
+Page: simulated banner with an expandable method, stat tiles, "where the class gets stuck" bars (one series, cause noted only where fewer than half mastered it), two separate small line charts (letters mastered, exam score: different scales, so never on one axis), assumption inputs, learner table (flagged by default, "show all"). Chart colour `--series-1` and the warning colour checked for contrast on both theme surfaces. Verified with screenshots in light and dark, no console errors.
 
 ### Live demo notes
 
