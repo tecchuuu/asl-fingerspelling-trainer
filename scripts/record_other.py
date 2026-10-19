@@ -7,6 +7,7 @@ A capture is taken every few frames while a hand is visible.
 
 Run from the project root:
     python -m scripts.record_other --session other-1 --notes "room light, right hand"
+    python -m scripts.record_other --session other-test --target 200 --notes "..."
 
 Keys:  SPACE start / pause   Q / Esc save and quit (rerun the same session to add more)
 """
@@ -26,7 +27,6 @@ from src.camera import CAMERA_INDEX, GREEN, RED, WHITE, YELLOW, CameraReader, dr
 
 WINDOW = "Record non-letter poses"
 CAPTURE_EVERY = 6  # frames, ~5 captures per second
-TARGET = 600
 
 
 def path_of(session):
@@ -53,6 +53,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--session", required=True)
     parser.add_argument("--notes", default="")
+    parser.add_argument("--target", type=int, default=600, help="captures to aim for (counter turns green)")
     args = parser.parse_args()
 
     landmarks, frame_sizes = load(args.session)
@@ -92,8 +93,8 @@ def main():
             preview = cv2.flip(preview, 1)
             status, color = ("CAPTURING - keep moving, no letters", RED) if capturing else ("PAUSED - SPACE to start", YELLOW)
             cv2.putText(preview, status, (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
-            cv2.putText(preview, f"{len(landmarks)} / {TARGET} captured", (10, 75),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, GREEN if len(landmarks) >= TARGET else WHITE, 2)
+            cv2.putText(preview, f"{len(landmarks)} / {args.target} captured", (10, 75),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, GREEN if len(landmarks) >= args.target else WHITE, 2)
             cv2.putText(preview, "SPACE start/pause   Q quit", (10, preview.shape[0] - 15),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.55, WHITE, 2)
             cv2.imshow(WINDOW, preview)
