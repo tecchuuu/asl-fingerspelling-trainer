@@ -103,6 +103,18 @@ All three use early-stopping patience 8 (see below).
 - **Dropout 0.5 vs 0.3** (on top of the schedule). Why try it: with the schedule, train loss falls to 0.034 vs val 0.101, a widening gap, so more regularization might help.
   - Result: **worse** (F1 96.51%, val loss 0.1165) and train loss back up to 0.078. 0.5 drops half the neurons in a small 256/128 network: it underfits instead of generalizing better. Keep 0.3.
 
+### Before vs after tuning (what the rubric's "Baseline" means)
+
+The course brief (`CS461_Final_Project_ปรับปรุง2569.pdf`) defines the Baseline as the first basic model that runs and gives initial results (Week 12 check-in), and the final report must show results before/after tuning. So the baseline is the **first, untuned MLP**, not a second architecture. The CNN comparison (section 5) comes from this project's own proposal, not the rubric.
+
+| | Setup | Val F1 | Val loss |
+|---|---|---|---|
+| **Baseline** (Phase 1) | Adam, batch 32, fixed lr, dropout 0.3, patience 5 | 96.45% | 0.1175 |
+| Optimizer × batch size | Adam, batch 64 | 96.60% | 0.1133 |
+| **Final tuned** | + ReduceLROnPlateau, patience 8 | **96.81%** | **0.1013** (−14%) |
+
+Tuning techniques covered, matching the brief's list: optimizer comparison (Adam vs SGD+momentum), batch size (32 vs 64), learning-rate scheduling (ReduceLROnPlateau vs fixed), early stopping, regularization (dropout 0.3 vs 0.5).
+
 **Final MLP settings: Adam, lr 1e-3, batch 64, ReduceLROnPlateau (factor 0.5, patience 2), dropout 0.3, early-stopping patience 8, max 50 epochs.** Best run: `20261018-222208_mlp_adam_bs64`. These are the settings the CNN will use.
 
 ## 5. MLP vs CNN
@@ -183,6 +195,26 @@ Final models chosen by **validation** F1, copied to `models/mlp_final.pt` and `m
   - Decision: **in the main webcam sessions every letter is signed like the dataset reference sheet** (natural angle and position), so the test measures generalization to a new person/camera/lighting, not disagreement about handshapes. A separate `standard-asl` session will record the correct ASL version of the letters that differ (T, K, P, and any found later).
   - Consequence for the product: a trainer built on this data would accept the dataset's T and reject a correct ASL T, i.e. teach a wrong sign. Fix for a real product: re-record or relabel T (and check P), or use a signer-verified dataset. Possible extra test: a few standard-ASL T and P captures to measure how often the models reject them.
 - Each session has a name and notes (lighting, background, distance, hand) in `data/webcam_test/<session>.json`. Planned conditions: daylight / night lamp, plain / busy background, near / far, right / left hand, different days.
+
+### Webcam test: first 2 sessions (`src/evaluate_webcam.py`, overall scores only)
+
+Scored after `room-right` and `screen-right`, before the left-hand sessions. Only overall F1 was looked at, no per-letter results, so the remaining sessions aren't biased toward "fixing" specific letters. Numbers in `webcam_summary.csv`.
+
+| Session | n | MLP F1 | CNN F1 | MLP acc | CNN acc |
+|---|---|---|---|---|---|
+| room-right (room light) | 72 | **98.6%** | 17.4% | 98.6% | 25.0% |
+| screen-right (dark, monitor light only) | 72 | **87.0%** | 0.8% | 88.9% | 4.2% |
+| **Both** | 144 | **93.5%** | 12.5% | 93.8% | 14.6% |
+
+- **MLP: above the 80% webcam target** (93.5%). In room light it matches its dataset test score (98.6% vs 98.1%); in the dark it drops ~11 points but stays usable.
+- **CNN: collapses.** 25% accuracy in room light, 4.2% in the dark, which is chance level for 24 letters (1/24 = 4.2%). Its 96% dataset score doesn't carry over at all.
+- **Not a bug:** the same scoring code gives the CNN 97.7% F1 on 1,000 dataset test crops, and the webcam crops are correctly framed hands (checked visually against dataset crops).
+- **Why:** the webcam crops differ from the dataset in everything except hand shape: a different person's skin, a dark chair and curtains behind the hand instead of a plain bright wall, a higher camera angle, and in the screen session much darker images (mean pixel brightness: dataset 111, room-right 146, screen-right 60). The CNN learned what this one signer's hands in this one room look like; the MLP only ever saw finger geometry, which is the same on any camera.
+- **This is the report's central result:** on the dataset the two models are 2 points apart (98.1 vs 96.0); on a real webcam they are ~80 points apart. Dataset accuracy alone would have picked either model; only the webcam test shows which one works.
+- **Decision: no further CNN work.** The comparison has answered the proposal's question, and neither the app nor the rubric needs the CNN (the rubric's "Baseline" is the untuned MLP, see section 4). The CNN stays frozen as `models/cnn_final.pt` and is still scored automatically on every webcam session by `evaluate_webcam.py`, so the comparison stays complete.
+  - Dropped, kept as future work: retraining the CNN with brightness/colour/background augmentation, a pretrained (ImageNet) backbone, extra CNN optimizer runs, a live side-by-side CNN demo.
+  - In hindsight the CNN was optional scope: it tested whether the landmark approach was the right bet, which wasn't known when planning. It cost one script and one overnight run.
+- Caveats: 72 samples per session, so ±a few points of noise; one signer. `screen-right` was partly captured rapid-fire (hand held, small adjustments) — to be checked when all sessions are in.
 
 ## 6. Live app
 

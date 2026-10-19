@@ -234,6 +234,9 @@ def main():
 
     camera.cap.release()
     cv2.destroyAllWindows()
+    if not samples["labels"]:
+        print(f"Nothing captured, no session file written for '{args.session}'.")
+        return
     save_session(args.session, samples, meta)
     status = "complete" if not queue else f"{len(queue)} left, rerun the same command to continue"
     print(f"Session '{args.session}': {len(samples['labels'])}/{total} samples saved ({status}).")
