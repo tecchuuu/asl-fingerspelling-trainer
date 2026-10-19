@@ -167,6 +167,15 @@ Final models chosen by **validation** F1, copied to `models/mlp_final.pt` and `m
 - **CNN: H ↔ G.** Both point sideways; G extends the index finger, H the index + middle finger stacked on top of it. In a 64×64 crop the two stacked fingers look like one thick finger. Landmarks place each fingertip separately, so the MLP barely confuses them (H → G 1.7%).
 - **The CNN is better on M and N** (94.0% / 94.8% vs the MLP's 91.8% / 93.8%): pixels still show the knuckle bumps that the landmarks lose. The two inputs carry complementary information. Future work: combine them (e.g. CNN only for M/N/S/T).
 
+### Webcam test set: recording protocol (`scripts/record_test.py`)
+
+- One signer (me). **Test only, never training.** Recorded before looking at any webcam results; letters are not re-recorded because a model got them wrong.
+- Per session: 24 letters × 3 captures = 72. Letters come in a fixed shuffled order (not A→Y) so fatigue doesn't always hit the same letters. Relax the hand between captures (0.8 s cooldown), so the 3 captures aren't near-duplicates.
+- Each capture saves the landmarks (MLP) and a 64×64 crop made by the same `crop_hand` as the dataset (CNN). Only the hand crop is stored, not the full frame.
+- Detection runs on the **raw camera frame**, which is what gets saved; only the on-screen preview is mirrored, for comfort. Mirror augmentation in training covers either orientation.
+- Frame size is saved per sample: webcam frames are 640×480, so the MLP gets `normalize(..., aspect=4/3)`.
+- Each session has a name and notes (lighting, background, distance, hand) in `data/webcam_test/<session>.json`. Planned conditions: daylight / night lamp, plain / busy background, near / far, right / left hand, different days.
+
 ## 6. Live app
 
 - Gate settings:
