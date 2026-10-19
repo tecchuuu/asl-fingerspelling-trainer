@@ -334,11 +334,31 @@ FastAPI server for the web app: `POST /predict` takes the 21 MediaPipe landmarks
 - Speed: ~5 ms per request in-process (validation + JSON + model); **2.4 ms round trip over real HTTP** on `127.0.0.1`.
 - **Gotcha:** the same request through `localhost` took **~2,040 ms**: on this Windows machine `localhost` tries IPv6 first and waits ~2 s before falling back to IPv4. Always use `http://127.0.0.1:8000`.
 
-### Frontend decision: React (changed from the proposal's plain HTML/JS)
+### Frontend decision: React (final; changed from the proposal's plain HTML/JS)
 
-- Why: the app has real UI state across pages (target letter, gate progress, word progress, pass/fail, attempt history, dashboard charts), which React handles cleanly, and I already know React. A shared `<Camera>` component (webcam + MediaPipe JS + calls to `/predict`) can be reused by all three modes.
-- Cost accepted: Node + `npm` + a build step; two processes while developing (Vite dev server proxying `/predict` to FastAPI on 127.0.0.1:8000). For the demo, `npm run build` once and FastAPI serves the built files, so it's still one command.
-- Plan: `web/` = Vite + React, MediaPipe via `@mediapipe/tasks-vision`. `node_modules/` and the build output stay out of git.
+| | Plain HTML/JS | React |
+|---|---|---|
+| Setup | none, FastAPI serves files | Node, npm, Vite, build step |
+| Daily dev | one server | Vite + FastAPI (proxy) |
+| Demo day | what's edited is what runs | must rebuild before demoing |
+| Live UI state (progress bar, guess, word, pass/fail) | manual DOM updates | state → UI automatically |
+| Reuse across 3 modes | shared modules, needs discipline | components (`<Camera>`) |
+| My familiarity | less practiced | know it |
+
+- **Chosen: React.** The two deciding factors were how much live state the pages have (camera-driven updates 16–30×/s plus mode logic) and familiarity. Setup costs are one-time. Rubric grades "a working web app", not the framework. The proposal said plain HTML/JS; this is a deliberate change.
+- Setup: `web/` = Vite + React, MediaPipe via `@mediapipe/tasks-vision`. In development Vite proxies API calls to FastAPI on 127.0.0.1:8000; for the demo, `npm run build` once and FastAPI serves `web/dist`, so it's one command. **Demo checklist: rebuild and test the built version, not only the dev server.**
+
+### Web app setup (Phase 4 start)
+
+- `web/`: Vite 8 + React 19, MediaPipe `@mediapipe/tasks-vision` **1.1.1, the same version as the Python `mediapipe==1.1.1`**, loading the same `hand_landmarker.task` file. `npm install` copies the MediaPipe WebAssembly and the model into `web/public/mediapipe/`, so the app runs offline (no CDN on demo day).
+- API routes moved under `/api/` (`/api/predict`, `/api/health`) so pages and API can't clash; Vite proxies `/api` to FastAPI in development; FastAPI serves the built app (`web/dist`) for the demo. Built bundle: 380 KB JS (116 KB gzipped).
+- `<Camera>` component shared by all modes: webcam 640×480 → MediaPipe in VIDEO mode on the **raw (unmirrored) frame, like Python**; only the display is mirrored.
+
+### Browser vs Python check (Phase 4 step 1)
+
+- Check page: live prediction from the browser's landmarks, and a "Compare with Python" button that sends the same frame as a JPEG to `/api/debug/compare`, where Python runs its own MediaPipe on it and returns both predictions plus the landmark difference.
+- Endpoint verified with simulated browser frames (dataset photos placed in a 640×480 frame): same letter, landmarks **0.3–0.5 px apart** (just JPEG compression). That's the baseline for the real browser test.
+- Real browser test: <!-- to fill in: ~5 letters signed, same letter X/5, mean xy diff ~? px -->
 
 ### Live demo notes
 

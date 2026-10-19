@@ -1,14 +1,23 @@
-"""Web API: the browser sends MediaPipe hand landmarks, the server answers with the letter.
+"""Web API + app: the browser sends MediaPipe hand landmarks, the server answers with the letter.
 
-Run from the project root:
-    python -m uvicorn app.main:app --reload
-Then open http://127.0.0.1:8000/docs to try the endpoints in the browser.
+Development (two terminals, from the project root):
+    python -m uvicorn app.main:app --reload        # API on http://127.0.0.1:8000
+    cd web && npm run dev                          # React app on http://127.0.0.1:5173 (proxies /api)
+Demo (one terminal): cd web && npm run build, then only the uvicorn command; open http://127.0.0.1:8000
+
 Use 127.0.0.1, not "localhost": on this Windows machine "localhost" tries IPv6 first and
 waits ~2 s before falling back, which made every request take 2 s instead of 2 ms.
 """
 
+import base64
+
+import cv2
+import mediapipe as mp
 import numpy as np
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
+from mediapipe.tasks.python import BaseOptions
+from mediapipe.tasks.python.vision import HandLandmarker, HandLandmarkerOptions, RunningMode
 from pydantic import BaseModel, Field
 
 from src import config
@@ -16,6 +25,7 @@ from src.evaluate_webcam import load_final
 from src.predict import letter_probs
 
 MODEL_NAME = "mlp_other"
+WEB_DIST = config.ROOT / "web" / "dist"
 
 app = FastAPI(title="ASL fingerspelling trainer")
 model = load_final(MODEL_NAME)
@@ -35,18 +45,64 @@ class Prediction(BaseModel):
     top3: list[tuple[str, float]]
 
 
-@app.get("/health")
-def health():
-    return {"status": "ok", "model": MODEL_NAME, "classes": len(CLASSES)}
-
-
-@app.post("/predict", response_model=Prediction)
-def predict(hand: Hand):
-    raw = np.asarray(hand.landmarks, dtype=np.float32)
-    probs = letter_probs(model, raw, aspect=hand.width / hand.height)
+def predict_raw(raw, width, height):
+    probs = letter_probs(model, np.asarray(raw, dtype=np.float32), aspect=width / height)
     order = np.argsort(probs)[::-1]
     return Prediction(
         letter=CLASSES[order[0]],
         confidence=float(probs[order[0]]),
         top3=[(CLASSES[i], float(probs[i])) for i in order[:3]],
     )
+
+
+@app.get("/api/health")
+def health():
+    return {"status": "ok", "model": MODEL_NAME, "classes": len(CLASSES)}
+
+
+@app.post("/api/predict", response_model=Prediction)
+def predict(hand: Hand):
+    return predict_raw(hand.landmarks, hand.width, hand.height)
+
+
+# --- Phase 4 check: does MediaPipe in the browser give the same hand as MediaPipe in Python? ---
+
+_python_landmarker = HandLandmarker.create_from_options(HandLandmarkerOptions(
+    base_options=BaseOptions(model_asset_path=str(config.HAND_MODEL_PATH)),
+    running_mode=RunningMode.IMAGE,
+    num_hands=1,
+))
+
+
+class CompareRequest(Hand):
+    image: str = Field(description="the same video frame as a base64 JPEG data URL")
+
+
+@app.post("/api/debug/compare")
+def compare(req: CompareRequest):
+    """Run Python MediaPipe on the frame the browser used, and compare landmarks and predictions."""
+    jpeg = base64.b64decode(req.image.split(",", 1)[-1])
+    bgr = cv2.imdecode(np.frombuffer(jpeg, np.uint8), cv2.IMREAD_COLOR)
+    if bgr is None:
+        raise HTTPException(400, "could not decode image")
+    rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+    result = _python_landmarker.detect(mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb))
+    if not result.hand_landmarks:
+        return {"python_found_hand": False, "browser": predict_raw(req.landmarks, req.width, req.height)}
+
+    py = np.array([(lm.x, lm.y, lm.z) for lm in result.hand_landmarks[0]], dtype=np.float32)
+    js = np.asarray(req.landmarks, dtype=np.float32)
+    h, w = rgb.shape[:2]
+    pixel_diff = np.abs((py[:, :2] - js[:, :2]) * [w, h]).mean()
+    return {
+        "python_found_hand": True,
+        "mean_xy_diff_px": float(pixel_diff),
+        "max_z_diff": float(np.abs(py[:, 2] - js[:, 2]).max()),
+        "browser": predict_raw(js, req.width, req.height),
+        "python": predict_raw(py, w, h),
+    }
+
+
+# The built React app (web/dist) is served last, so /api routes win
+if WEB_DIST.exists():
+    app.mount("/", StaticFiles(directory=WEB_DIST, html=True), name="web")

@@ -18,7 +18,7 @@ SESSION = "room-right"
 
 def main():
     client = TestClient(app)
-    print("GET /health ->", client.get("/health").json())
+    print("GET /health ->", client.get("/api/health").json())
 
     with np.load(config.WEBCAM_TEST_DIR / f"{SESSION}.npz") as d:
         landmarks, labels, sizes = d["landmarks"], d["labels"], d["frame_size"]
@@ -27,7 +27,7 @@ def main():
     times = []
     for lm, label, (w, h) in zip(landmarks, labels, sizes):
         t0 = time.perf_counter()
-        r = client.post("/predict", json={"landmarks": lm.tolist(), "width": int(w), "height": int(h)})
+        r = client.post("/api/predict", json={"landmarks": lm.tolist(), "width": int(w), "height": int(h)})
         times.append((time.perf_counter() - t0) * 1000)
         r.raise_for_status()
         api = r.json()
@@ -38,9 +38,9 @@ def main():
     n = len(labels)
     print(f"{SESSION}: {n} samples | API == direct model: {agree}/{n} | API correct: {correct}/{n}")
     print(f"Request time (in-process, no network): median {np.median(times):.2f} ms")
-    print("Example response:", client.post("/predict", json={"landmarks": landmarks[0].tolist(),
+    print("Example response:", client.post("/api/predict", json={"landmarks": landmarks[0].tolist(),
                                                               "width": int(sizes[0][0]), "height": int(sizes[0][1])}).json())
-    bad = client.post("/predict", json={"landmarks": [[0, 0, 0]] * 5, "width": 640, "height": 480})
+    bad = client.post("/api/predict", json={"landmarks": [[0, 0, 0]] * 5, "width": 640, "height": 480})
     print(f"Malformed request (5 points) -> HTTP {bad.status_code} (expected 422)")
 
 

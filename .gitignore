@@ -37,3 +37,8 @@ kaggle.json
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Web app: installed packages, build output, files copied by npm postinstall
+web/node_modules/
+web/dist/
+web/public/mediapipe/
