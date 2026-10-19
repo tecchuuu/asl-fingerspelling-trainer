@@ -14,6 +14,10 @@ from datetime import datetime
 
 from src import config
 
+# Typed letter logged when the learner presses "I don't know" in an exam: counts as wrong,
+# but isn't something the model saw, so it's left out of the confusion list
+UNKNOWN = "?"
+
 # Overridable so checks can use a throwaway database
 DB_PATH = os.environ.get("ASL_DB_PATH", str(config.DATA_DIR / "attempts.db"))
 
@@ -120,8 +124,8 @@ def progress():
         """).fetchall()
         confusions = conn.execute("""
             SELECT target, typed, COUNT(*) AS n FROM attempts
-            WHERE correct = 0 GROUP BY target, typed ORDER BY n DESC LIMIT 10
-        """).fetchall()
+            WHERE correct = 0 AND typed != ? GROUP BY target, typed ORDER BY n DESC LIMIT 10
+        """, (UNKNOWN,)).fetchall()
         categories = conn.execute("""
             SELECT s.category,
                    -- an item is completed when its last letter was signed correctly

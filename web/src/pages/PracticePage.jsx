@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import Camera from "../components/Camera.jsx";
+import LiveCamera from "../components/LiveCamera.jsx";
+import WordDisplay from "../components/WordDisplay.jsx";
 import { logAttempt, startSession } from "../lib/api.js";
 import { useLetterStream } from "../lib/useLetterStream.js";
 import { categoryById, LETTER_NOTES, makeQueue } from "../lib/words.js";
@@ -87,21 +88,11 @@ export default function PracticePage({ categoryId, onBack }) {
         <button className="ghost" onClick={skip}>Skip</button>
       </div>
 
-      <div className="word">
-        {[...item].map((c, i) => (
-          <span key={i} className={i < index ? "done" : i === index ? "current" : ""}>{c}</span>
-        ))}
-      </div>
+      <WordDisplay item={item} index={index} />
       <div className={`feedback ${feedback?.kind ?? ""}`}>{feedback?.text ?? " "}</div>
 
       <div className="layout">
-        <div>
-          <Camera onFrame={onFrame} />
-          <div className="guess">
-            <span>{live ? (live.letter === "other" ? "–" : live.letter) : "no hand"}</span>
-            <div className="bar"><div style={{ width: `${progress * 100}%` }} /></div>
-          </div>
-        </div>
+        <LiveCamera onFrame={onFrame} live={live} progress={progress} />
 
         {target && (
           <div className="panel reference">

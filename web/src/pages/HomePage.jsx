@@ -43,7 +43,7 @@ export default function HomePage({ onStart }) {
               </div>
               <div className="card-actions">
                 <button onClick={() => onStart(c.id, "practice")}>Practice</button>
-                <button className="ghost" disabled title="Coming next">Exam</button>
+                <button className="ghost" onClick={() => onStart(c.id, "exam")}>Exam</button>
               </div>
             </div>
           );

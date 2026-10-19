@@ -402,6 +402,16 @@ API: `POST /api/sessions`, `POST /api/sessions/{id}/finish`, `POST /api/attempts
 - The spell page became **Practice** for a chosen category: same behaviour, the logged session carries the category id. Words/Letters toggle removed (Alphabet is now its own category).
 - Verified in a browser: home renders all 7 cards, Food → Practice shows a Food word with the right photo, back returns home, no console errors. Not verified: signing with the live camera.
 
+### Exam mode (hub step 3)
+
+- Start screen explains the rules; the learner presses Start once the skeleton shows on their hand.
+- **5 words** from the category (**10 letters** for Alphabet), **no reference photo**. The live guess and progress bar stay visible (they show what the learner is signing, not the answer).
+- Each letter ends as **first try / after retries / failed**. A wrong sign shows "Not quite (looked like X)"; after **3 misses** the letter is marked wrong and the exam moves on. "I don't know" fails the letter immediately and shows the answer.
+- **Score = letters right on the first try**, computed by the server from the attempt log (see attempt log). "I don't know" is logged with typed = "?": counts as wrong for the score and the letter's accuracy, excluded from the confusion list (it isn't something the model saw). Covered by a new check in `scripts/check_db.py` (10/10 pass).
+- Results screen: score, every word with letters coloured by outcome, "letters to practise", buttons for Try again / Practice this category / Categories. The category card shows the best exam score.
+- Practice and Exam share `WordDisplay` and `LiveCamera` components.
+- Verified in a browser by running a full Colors exam answering "I don't know" to all 24 letters: intro → 5 words with no photo → results 0%, all letters failed, letters-to-practise list, exam saved on the server, card shows "best exam 0%". The test exam was then deleted from `data/attempts.db`. Not verified: an exam signed with the live camera.
+
 ### Live demo notes
 
 - Gate settings: default (10 frames, 0.8) felt fine in the first live try; note that the 10-frame hold is fps-dependent (~0.6 s at 16 FPS, ~0.33 s at 30 FPS).

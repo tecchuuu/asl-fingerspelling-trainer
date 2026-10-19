@@ -52,6 +52,16 @@ def main():
                          cats["everyday"]["items_completed"] == 1 and cats["food"]["best_exam"] == 0.75))
     results.append(check("exam history has the exam", [x["id"] for x in prog["exams"]] == [e]))
 
+    # "I don't know" in an exam: counts against the letter, stays out of the confusion list
+    e2 = c.post("/api/sessions", json={"mode": "exam", "category": "colors", "items_total": 1}).json()["session_id"]
+    for pos, target, typed in [(0, "R", "?"), (1, "E", "E"), (2, "D", "D")]:
+        c.post("/api/attempts", json={"session_id": e2, "item": "RED", "position": pos, "target": target, "typed": typed})
+    s2 = c.post(f"/api/sessions/{e2}/finish").json()["score"]
+    prog = c.get("/api/progress").json()
+    r_acc = {r["letter"]: r for r in prog["letters"]}["R"]["accuracy"]
+    results.append(check(f"'I don't know': exam 2/3 ({s2:.3f}), R accuracy 0, not a confusion",
+                         abs(s2 - 2 / 3) < 1e-9 and r_acc == 0 and all(x["typed"] != "?" for x in prog["confusions"])))
+
     bad = c.post("/api/sessions", json={"mode": "quiz", "category": "x"}).status_code
     results.append(check(f"invalid mode rejected (HTTP {bad})", bad == 422))
     print("All passed." if all(results) else "Some failed.")

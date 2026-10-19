@@ -81,3 +81,18 @@ button.ghost { background: transparent; color: var(--muted); border: 1px solid #
 .card-actions { display: flex; gap: 8px; margin-top: auto; }
 .card-actions button { flex: 1; }
 .toolbar-title { font-weight: 700; }
+
+/* Exam */
+.word span.first { color: var(--accent); }
+.word span.retry { color: #facc15; }
+.word span.failed { color: var(--bad); text-decoration: line-through; }
+.exam-intro { max-width: 520px; margin: 0 auto 20px; }
+.exam-intro h2, .exam-results h2 { margin: 0 0 8px; }
+.exam-intro ul { padding-left: 20px; line-height: 1.7; }
+.exam-results { max-width: 640px; margin: 0 auto; text-align: center; }
+.exam-results h2 { font-size: 3.5rem; color: var(--accent); }
+.result-words .word { margin: 4px 0; }
+.result-words .word span { font-size: 1.8rem; }
+.legend .first { color: var(--accent); } .legend .retry { color: #facc15; } .legend .failed { color: var(--bad); }
+.legend span { margin-left: 10px; }
+.reference button.ghost { margin-top: 12px; }
