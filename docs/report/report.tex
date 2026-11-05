@@ -227,7 +227,7 @@ gives it 97.7\% on dataset crops.
 On the webcam the MLP's main weakness is Q$\rightarrow$P (6 of 9 Q's): both point down, and my
 camera is mounted high, looking down, an angle the dataset does not have. The left hand costs
 7 points (mirroring mostly works) and darkness 12. \textbf{Speed:} the full pipeline takes
-\textbf{10.8\,ms per frame} (median; 13.2\,ms at the 95th percentile) on a laptop CPU, against
+\textbf{10.8\,ms per frame} (median; 13.2\,ms at the 95th percentile) on a desktop CPU (AMD Ryzen 5 3600), against
 a 33\,ms target; MediaPipe is 98\% of that and the MLP 0.25\,ms. \textbf{Browser vs Python:}
 the web app runs MediaPipe in the browser; on 26 frames of all 24 letters it gave the same
 letter as Python every time, with landmarks a median 3\,px apart.

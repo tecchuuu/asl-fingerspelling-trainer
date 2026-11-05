@@ -29,7 +29,7 @@ Covers the 24 static letters of the ASL alphabet (J and Z need motion).
 On the dataset the two models are 2 points apart; on a real webcam, about 80. The CNN learned the look of the dataset's single room and signer, while landmarks carry no lighting, background or skin information.
 
 - Webcam: room light 98.6%, left hand 91.3%, dark room 87.0% (target was ≥ 80%)
-- Processing time: 10.8 ms per frame on a laptop CPU (target ≤ 33 ms)
+- Processing time: 10.8 ms per frame on a desktop CPU, Ryzen 5 3600 (target ≤ 33 ms)
 - Tuning (Adam vs SGD+momentum, batch size, LR schedule, dropout): validation loss 0.1175 → 0.1013
 
 Full numbers, decisions and every experiment: [`results/RESULTS.md`](results/RESULTS.md).
