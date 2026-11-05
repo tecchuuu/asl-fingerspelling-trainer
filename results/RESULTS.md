@@ -482,4 +482,10 @@ The first version looked like a generic dashboard template (dark slate, green bu
 - **Webcam freezes during long recording sessions.** In `record_test.py` the preview froze after a few minutes, then eventually "Camera stopped sending frames". Cause: the camera kept returning the same stale frame, which looks like a normal successful read. Fixes in `CameraReader`: retry failed reads for ~1.5 s; treat ~1.5 s of byte-identical frames as frozen (a live sensor always adds noise) and reconnect the camera automatically; request MJPG at 640×480 to reduce USB bandwidth. Tested with a fake camera that freezes; not yet confirmed on the real webcam.
 - **"Could not start video source" in the browser app** (demo build, first visit to `127.0.0.1:8000`). Chrome's permission prompt shows a live camera preview; when Allow is clicked the page requests the camera at once, and this webcam refuses a second open while the preview still holds it (`NotReadableError`). Nothing else was holding the camera. Fix in `Camera.jsx`: retry with backoff (preferred 640×480 settings, then defaults after 0.7 s, 1.5 s, 3 s), stop early only on a denied permission, show the error name, and a **Retry camera** button instead of reloading. Workaround before the fix: reload once after allowing (no prompt the second time). Denied-permission path verified in a browser; on the real webcam, a reload after allowing worked (permission remembered, no prompt), confirming the cause. **Demo checklist:** `python -m scripts.reset_progress` for a clean slate (copies the log to `data/attempts-backup-<date-time>.db`, then empties it; safe with the server running), run `demo.bat`, open `http://127.0.0.1:8000` and allow the camera once before presenting, on the same PC and browser.
 
-## 8. Report lines
+## 8. Progress check-in (2026-11-05)
+
+- Presented the whole project (about 5–10 min, demo slide cut; app shown only on request).
+- Feedback: no required changes. Fixing the known issues (T, one signer, O→C, Q→P) would be nice if possible; an LSTM for J/Z is optional ("if you want to try it").
+- Decision so far: no fixes planned; J/Z stays future work.
+
+## 9. Report lines
